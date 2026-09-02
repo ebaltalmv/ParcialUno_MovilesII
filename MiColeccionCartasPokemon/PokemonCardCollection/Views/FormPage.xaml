@@ -4,74 +4,90 @@
              xmlns:vm="clr-namespace:PokemonCardCollection.ViewModels"
              x:Class="PokemonCardCollection.Views.FormPage"
              x:DataType="vm:FormViewModel"
-             Title="{Binding PageTitle}">
+             Title="{Binding PageTitle}"
+             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource OffBlack}}">
 
     <ScrollView Padding="16">
-        <VerticalStackLayout Spacing="14">
+        <VerticalStackLayout Spacing="16">
 
             <!-- Name -->
-            <VerticalStackLayout Spacing="4">
+            <VerticalStackLayout Spacing="8">
                 <Label Text="Name" FontAttributes="Bold" />
-                <Entry Text="{Binding Name}" Placeholder="e.g. Charizard" />
+                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Black}}" Padding="4,0" StrokeThickness="0">
+                    <Entry Text="{Binding Name}" Placeholder="e.g. Charizard" />
+                </Border>
             </VerticalStackLayout>
 
             <!-- Category -->
-            <VerticalStackLayout Spacing="4">
+            <VerticalStackLayout Spacing="8">
                 <Label Text="Category (Type)" FontAttributes="Bold" />
-                <Entry Text="{Binding Category}" Placeholder="e.g. Fire, Water, Electric…" />
+                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Black}}" Padding="4,0" StrokeThickness="0">
+                    <Entry Text="{Binding Category}" Placeholder="e.g. Fire, Water, Electric…" />
+                </Border>
             </VerticalStackLayout>
 
             <!-- Rarity -->
-            <VerticalStackLayout Spacing="4">
+            <VerticalStackLayout Spacing="8">
                 <Label Text="Rarity" FontAttributes="Bold" />
-                <Entry Text="{Binding Rarity}" Placeholder="e.g. Common, Rare Holo, Ultra Rare" />
+                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Black}}" Padding="4,0" StrokeThickness="0">
+                    <Entry Text="{Binding Rarity}" Placeholder="e.g. Common, Rare Holo, Ultra Rare" />
+                </Border>
             </VerticalStackLayout>
 
             <!-- Condition -->
-            <VerticalStackLayout Spacing="4">
+            <VerticalStackLayout Spacing="8">
                 <Label Text="Condition" FontAttributes="Bold" />
-                <Entry Text="{Binding Condition}" Placeholder="e.g. Mint, Near Mint, Played" />
+                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Black}}" Padding="4,0" StrokeThickness="0">
+                    <Entry Text="{Binding Condition}" Placeholder="e.g. Mint, Near Mint, Played" />
+                </Border>
             </VerticalStackLayout>
 
             <!-- Estimated Value -->
-            <VerticalStackLayout Spacing="4">
+            <VerticalStackLayout Spacing="8">
                 <Label Text="Estimated Value ($)" FontAttributes="Bold" />
-                <Entry Text="{Binding EstimatedValue}" Placeholder="0.00" Keyboard="Numeric" />
+                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Black}}" Padding="4,0" StrokeThickness="0">
+                    <Entry Text="{Binding EstimatedValue}" Placeholder="0.00" Keyboard="Numeric" />
+                </Border>
             </VerticalStackLayout>
 
             <!-- Image URI -->
-            <VerticalStackLayout Spacing="4">
+            <VerticalStackLayout Spacing="8">
                 <Label Text="Image URI" FontAttributes="Bold" />
-                <Entry Text="{Binding ImageUri}" Placeholder="Image filename or URL" />
+                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Black}}" Padding="4,0" StrokeThickness="0">
+                    <Entry Text="{Binding ImageUri}" Placeholder="Image filename or URL" />
+                </Border>
             </VerticalStackLayout>
 
             <!-- Description -->
-            <VerticalStackLayout Spacing="4">
+            <VerticalStackLayout Spacing="8">
                 <Label Text="Description" FontAttributes="Bold" />
-                <Editor Text="{Binding Description}" Placeholder="Card description…" HeightRequest="100" />
+                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Black}}" Padding="4,0" StrokeThickness="0">
+                    <Editor Text="{Binding Description}" Placeholder="Card description…" HeightRequest="100" />
+                </Border>
             </VerticalStackLayout>
 
             <!-- Is Favorite -->
-            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+            <HorizontalStackLayout Spacing="16" VerticalOptions="Center" Margin="0,8">
                 <Label Text="Favorite" FontAttributes="Bold" VerticalTextAlignment="Center" />
                 <Switch IsToggled="{Binding IsFavorite}" />
             </HorizontalStackLayout>
 
             <!-- Action buttons -->
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,12,0,0">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,16,0,0">
                 <Button Grid.Column="0"
                         Text="Save"
                         Command="{Binding SaveCardCommand}"
                         BackgroundColor="{StaticResource Primary}"
-                        TextColor="White"
+                        TextColor="{StaticResource White}"
                         CornerRadius="8"
                         FontAttributes="Bold" />
                 <Button Grid.Column="1"
                         Text="Cancel"
                         Command="{Binding CancelCommand}"
-                        BackgroundColor="Gray"
-                        TextColor="White"
-                        CornerRadius="8" />
+                        BackgroundColor="{StaticResource Outline}"
+                        TextColor="{StaticResource White}"
+                        CornerRadius="8"
+                        FontAttributes="Bold" />
             </Grid>
 
         </VerticalStackLayout>

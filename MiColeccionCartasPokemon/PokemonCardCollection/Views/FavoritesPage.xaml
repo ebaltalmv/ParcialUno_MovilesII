@@ -5,7 +5,8 @@
              xmlns:models="clr-namespace:PokemonCardCollection.Models"
              x:Class="PokemonCardCollection.Views.FavoritesPage"
              x:DataType="vm:FavoritesViewModel"
-             Title="Favorites">
+             Title="Favorites"
+             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource OffBlack}}">
 
     <Grid RowDefinitions="*" Padding="16">
 
@@ -13,16 +14,20 @@
                         SelectionMode="Single"
                         SelectionChangedCommand="{Binding GoToDetailCommand}"
                         SelectionChangedCommandParameter="{Binding Source={RelativeSource Self}, Path=SelectedItem}">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="1" VerticalItemSpacing="16" />
+            </CollectionView.ItemsLayout>
+
             <CollectionView.EmptyView>
                 <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
-                    <Label Text="No favorites yet!" FontSize="20" HorizontalTextAlignment="Center" />
-                    <Label Text="Mark cards as ★ to see them here." FontSize="14" TextColor="Gray" HorizontalTextAlignment="Center" />
+                    <Label Text="No favorites yet!" FontSize="20" HorizontalTextAlignment="Center" FontAttributes="Bold" />
+                    <Label Text="Mark cards as ★ to see them here." FontSize="14" TextColor="{StaticResource Outline}" HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
 
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:PokemonCard">
-                    <Border Margin="0,6" Padding="12" StrokeShape="RoundRectangle 12" Stroke="LightGray">
+                    <Border BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Black}}" Padding="12">
                         <Grid ColumnDefinitions="80,*" ColumnSpacing="12">
                             <Image Grid.Column="0"
                                    Source="{Binding ImageUri}"
@@ -32,11 +37,14 @@
                             <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
                                 <Label Text="{Binding Name}" FontSize="18" FontAttributes="Bold" />
                                 <HorizontalStackLayout Spacing="8">
-                                    <Label Text="{Binding Category}" FontSize="13" TextColor="Gray" />
-                                    <Label Text="•" FontSize="13" TextColor="Gray" />
-                                    <Label Text="{Binding Rarity}" FontSize="13" TextColor="Gray" />
+                                    <Border StrokeShape="RoundRectangle 999" BackgroundColor="{StaticResource Secondary}" Padding="8,4" StrokeThickness="0">
+                                        <Label Text="{Binding Category}" FontSize="12" TextColor="{StaticResource White}" FontAttributes="Bold" />
+                                    </Border>
+                                    <Border StrokeShape="RoundRectangle 999" BackgroundColor="{StaticResource Tertiary}" Padding="8,4" StrokeThickness="0">
+                                        <Label Text="{Binding Rarity}" FontSize="12" TextColor="{StaticResource Black}" FontAttributes="Bold" />
+                                    </Border>
                                 </HorizontalStackLayout>
-                                <Label Text="★ Favorite" FontSize="13" TextColor="Gold" FontAttributes="Bold" />
+                                <Label Text="★ Favorite" FontSize="13" TextColor="{StaticResource Tertiary}" FontAttributes="Bold" />
                             </VerticalStackLayout>
                         </Grid>
                     </Border>

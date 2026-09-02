@@ -4,7 +4,8 @@
              xmlns:vm="clr-namespace:PokemonCardCollection.ViewModels"
              x:Class="PokemonCardCollection.Views.DetailPage"
              x:DataType="vm:DetailViewModel"
-             Title="Card Details">
+             Title="Card Details"
+             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource OffBlack}}">
 
     <ScrollView Padding="16">
         <VerticalStackLayout Spacing="16">
@@ -26,29 +27,33 @@
                        FontAttributes="Bold"
                        VerticalTextAlignment="Center" />
                 <Button Grid.Column="1"
-                        Text="{Binding Card.IsFavorite, Converter={x:Null}}"
+                        Text="{Binding Card.IsFavorite, Converter={x:Null}}" 
                         Command="{Binding ToggleFavoriteCommand}"
                         FontSize="24"
                         BackgroundColor="Transparent"
-                        TextColor="Red">
+                        TextColor="{StaticResource Tertiary}">
                     <!-- Placeholder: show ★ or ☆ depending on IsFavorite -->
                 </Button>
             </Grid>
 
             <!-- Info rows -->
-            <Border Padding="16" StrokeShape="RoundRectangle 12" Stroke="LightGray">
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" RowSpacing="10" ColumnSpacing="12">
+            <Border Padding="16" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Black}}">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" RowSpacing="12" ColumnSpacing="16">
                     <Label Grid.Row="0" Grid.Column="0" Text="Category:" FontAttributes="Bold" />
-                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding Card.Category}" />
+                    <Border Grid.Row="0" Grid.Column="1" StrokeShape="RoundRectangle 999" BackgroundColor="{StaticResource Secondary}" Padding="8,4" StrokeThickness="0" HorizontalOptions="Start">
+                        <Label Text="{Binding Card.Category}" TextColor="{StaticResource White}" FontAttributes="Bold" />
+                    </Border>
 
-                    <Label Grid.Row="1" Grid.Column="0" Text="Rarity:" FontAttributes="Bold" />
-                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding Card.Rarity}" />
+                    <Label Grid.Row="1" Grid.Column="0" Text="Rarity:" FontAttributes="Bold" VerticalTextAlignment="Center" />
+                    <Border Grid.Row="1" Grid.Column="1" StrokeShape="RoundRectangle 999" BackgroundColor="{StaticResource Tertiary}" Padding="8,4" StrokeThickness="0" HorizontalOptions="Start">
+                        <Label Text="{Binding Card.Rarity}" TextColor="{StaticResource Black}" FontAttributes="Bold" />
+                    </Border>
 
                     <Label Grid.Row="2" Grid.Column="0" Text="Condition:" FontAttributes="Bold" />
                     <Label Grid.Row="2" Grid.Column="1" Text="{Binding Card.Condition}" />
 
                     <Label Grid.Row="3" Grid.Column="0" Text="Est. Value:" FontAttributes="Bold" />
-                    <Label Grid.Row="3" Grid.Column="1" TextColor="Green">
+                    <Label Grid.Row="3" Grid.Column="1" TextColor="{StaticResource Primary}" FontAttributes="Bold">
                         <Label.Text>
                             <Binding Path="Card.EstimatedValue" StringFormat="$ {0:N2}" />
                         </Label.Text>
@@ -59,23 +64,25 @@
             <!-- Description -->
             <Label Text="{Binding Card.Description}"
                    FontSize="15"
-                   TextColor="Gray"
+                   TextColor="{StaticResource Outline}"
                    LineBreakMode="WordWrap" />
 
             <!-- Action buttons -->
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,16,0,0">
                 <Button Grid.Column="0"
                         Text="Edit"
                         Command="{Binding GoToEditCardCommand}"
                         BackgroundColor="{StaticResource Primary}"
-                        TextColor="White"
-                        CornerRadius="8" />
+                        TextColor="{StaticResource White}"
+                        CornerRadius="8"
+                        FontAttributes="Bold" />
                 <Button Grid.Column="1"
                         Text="Delete"
                         Command="{Binding DeleteCardCommand}"
-                        BackgroundColor="Red"
-                        TextColor="White"
-                        CornerRadius="8" />
+                        BackgroundColor="{StaticResource Error}"
+                        TextColor="{StaticResource White}"
+                        CornerRadius="8"
+                        FontAttributes="Bold" />
             </Grid>
 
             <!-- Back button -->
