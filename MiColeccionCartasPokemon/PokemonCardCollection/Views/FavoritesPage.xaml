@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:PokemonCardCollection.ViewModels"
+             x:Class="PokemonCardCollection.Views.FavoritesPage"
+             x:DataType="vm:FavoritesViewModel"
+             Title="Favorites">
+
+    <Grid RowDefinitions="*" Padding="16">
+
+        <CollectionView ItemsSource="{Binding FavoriteCards}"
+                        SelectionMode="Single"
+                        SelectionChangedCommand="{Binding GoToDetailCommand}"
+                        SelectionChangedCommandParameter="{Binding Source={RelativeSource Self}, Path=SelectedItem}">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                    <Label Text="No favorites yet!" FontSize="20" HorizontalTextAlignment="Center" />
+                    <Label Text="Mark cards as ★ to see them here." FontSize="14" TextColor="Gray" HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="x:Object">
+                    <Frame Margin="0,6" Padding="12" CornerRadius="12" HasShadow="True" BorderColor="LightGray">
+                        <Grid ColumnDefinitions="80,*" ColumnSpacing="12">
+                            <Image Grid.Column="0"
+                                   Source="{Binding ImageUri}"
+                                   Aspect="AspectFill"
+                                   HeightRequest="80"
+                                   WidthRequest="80" />
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                                <Label Text="{Binding Name}" FontSize="18" FontAttributes="Bold" />
+                                <HorizontalStackLayout Spacing="8">
+                                    <Label Text="{Binding Category}" FontSize="13" TextColor="Gray" />
+                                    <Label Text="•" FontSize="13" TextColor="Gray" />
+                                    <Label Text="{Binding Rarity}" FontSize="13" TextColor="Gray" />
+                                </HorizontalStackLayout>
+                                <Label Text="★ Favorite" FontSize="13" TextColor="Gold" FontAttributes="Bold" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </Grid>
+
+</ContentPage>

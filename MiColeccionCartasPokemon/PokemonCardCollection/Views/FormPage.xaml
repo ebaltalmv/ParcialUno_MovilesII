@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:PokemonCardCollection.ViewModels"
+             x:Class="PokemonCardCollection.Views.FormPage"
+             x:DataType="vm:FormViewModel"
+             Title="{Binding PageTitle}">
+
+    <ScrollView Padding="16">
+        <VerticalStackLayout Spacing="14">
+
+            <!-- Name -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Name" FontAttributes="Bold" />
+                <Entry Text="{Binding Name}" Placeholder="e.g. Charizard" />
+            </VerticalStackLayout>
+
+            <!-- Category -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Category (Type)" FontAttributes="Bold" />
+                <Entry Text="{Binding Category}" Placeholder="e.g. Fire, Water, Electric…" />
+            </VerticalStackLayout>
+
+            <!-- Rarity -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Rarity" FontAttributes="Bold" />
+                <Entry Text="{Binding Rarity}" Placeholder="e.g. Common, Rare Holo, Ultra Rare" />
+            </VerticalStackLayout>
+
+            <!-- Condition -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Condition" FontAttributes="Bold" />
+                <Entry Text="{Binding Condition}" Placeholder="e.g. Mint, Near Mint, Played" />
+            </VerticalStackLayout>
+
+            <!-- Estimated Value -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Estimated Value ($)" FontAttributes="Bold" />
+                <Entry Text="{Binding EstimatedValue}" Placeholder="0.00" Keyboard="Numeric" />
+            </VerticalStackLayout>
+
+            <!-- Image URI -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Image URI" FontAttributes="Bold" />
+                <Entry Text="{Binding ImageUri}" Placeholder="Image filename or URL" />
+            </VerticalStackLayout>
+
+            <!-- Description -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Description" FontAttributes="Bold" />
+                <Editor Text="{Binding Description}" Placeholder="Card description…" HeightRequest="100" />
+            </VerticalStackLayout>
+
+            <!-- Is Favorite -->
+            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                <Label Text="Favorite" FontAttributes="Bold" VerticalTextAlignment="Center" />
+                <Switch IsToggled="{Binding IsFavorite}" />
+            </HorizontalStackLayout>
+
+            <!-- Action buttons -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,12,0,0">
+                <Button Grid.Column="0"
+                        Text="Save"
+                        Command="{Binding SaveCardCommand}"
+                        BackgroundColor="{StaticResource Primary}"
+                        TextColor="White"
+                        CornerRadius="8"
+                        FontAttributes="Bold" />
+                <Button Grid.Column="1"
+                        Text="Cancel"
+                        Command="{Binding CancelCommand}"
+                        BackgroundColor="Gray"
+                        TextColor="White"
+                        CornerRadius="8" />
+            </Grid>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

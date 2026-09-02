@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:PokemonCardCollection.ViewModels"
+             x:Class="PokemonCardCollection.Views.DetailPage"
+             x:DataType="vm:DetailViewModel"
+             Title="Card Details">
+
+    <ScrollView Padding="16">
+        <VerticalStackLayout Spacing="16">
+
+            <!-- Card image -->
+            <Frame CornerRadius="16" Padding="0" HasShadow="True" HorizontalOptions="Center"
+                   IsClippedToBounds="True" HeightRequest="260" WidthRequest="260">
+                <Image Source="{Binding Card.ImageUri}"
+                       Aspect="AspectFill"
+                       HeightRequest="260"
+                       WidthRequest="260" />
+            </Frame>
+
+            <!-- Name and Favorite -->
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Grid.Column="0"
+                       Text="{Binding Card.Name}"
+                       FontSize="28"
+                       FontAttributes="Bold"
+                       VerticalTextAlignment="Center" />
+                <Button Grid.Column="1"
+                        Text="{Binding Card.IsFavorite, Converter={x:Null}}"
+                        Command="{Binding ToggleFavoriteCommand}"
+                        FontSize="24"
+                        BackgroundColor="Transparent"
+                        TextColor="Red">
+                    <!-- Placeholder: show ★ or ☆ depending on IsFavorite -->
+                </Button>
+            </Grid>
+
+            <!-- Info rows -->
+            <Frame Padding="16" CornerRadius="12" BorderColor="LightGray" HasShadow="False">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" RowSpacing="10" ColumnSpacing="12">
+                    <Label Grid.Row="0" Grid.Column="0" Text="Category:" FontAttributes="Bold" />
+                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding Card.Category}" />
+
+                    <Label Grid.Row="1" Grid.Column="0" Text="Rarity:" FontAttributes="Bold" />
+                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding Card.Rarity}" />
+
+                    <Label Grid.Row="2" Grid.Column="0" Text="Condition:" FontAttributes="Bold" />
+                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding Card.Condition}" />
+
+                    <Label Grid.Row="3" Grid.Column="0" Text="Est. Value:" FontAttributes="Bold" />
+                    <Label Grid.Row="3" Grid.Column="1" TextColor="Green">
+                        <Label.Text>
+                            <Binding Path="Card.EstimatedValue" StringFormat="$ {0:N2}" />
+                        </Label.Text>
+                    </Label>
+                </Grid>
+            </Frame>
+
+            <!-- Description -->
+            <Label Text="{Binding Card.Description}"
+                   FontSize="15"
+                   TextColor="Gray"
+                   LineBreakMode="WordWrap" />
+
+            <!-- Action buttons -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <Button Grid.Column="0"
+                        Text="Edit"
+                        Command="{Binding GoToEditCardCommand}"
+                        BackgroundColor="{StaticResource Primary}"
+                        TextColor="White"
+                        CornerRadius="8" />
+                <Button Grid.Column="1"
+                        Text="Delete"
+                        Command="{Binding DeleteCardCommand}"
+                        BackgroundColor="Red"
+                        TextColor="White"
+                        CornerRadius="8" />
+            </Grid>
+
+            <!-- Back button -->
+            <Button Text="← Back"
+                    Command="{Binding GoBackCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="{StaticResource Primary}"
+                    FontAttributes="Bold" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

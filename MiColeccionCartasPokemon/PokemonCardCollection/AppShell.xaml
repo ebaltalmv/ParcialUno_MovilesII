@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="PokemonCardCollection.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:PokemonCardCollection.Views"
+    Title="Pokémon Card Collection">
+
+    <!-- Tab-based navigation: Collection and Favorites are always visible -->
+    <TabBar>
+        <ShellContent
+            Title="Collection"
+            Icon="dotnet_bot.png"
+            ContentTemplate="{DataTemplate views:ListPage}"
+            Route="ListPage" />
+
+        <ShellContent
+            Title="Favorites"
+            Icon="dotnet_bot.png"
+            ContentTemplate="{DataTemplate views:FavoritesPage}"
+            Route="FavoritesPage" />
+    </TabBar>
+
+</Shell>
