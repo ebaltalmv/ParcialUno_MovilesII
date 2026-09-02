@@ -13,7 +13,7 @@ public partial class FavoritesPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        // Refresh favorites every time the page appears
+        // Recargar las favoritas cada vez que la pantalla aparece
         if (BindingContext is FavoritesViewModel vm)
             vm.LoadFavoritesCommand.Execute(null);
     }

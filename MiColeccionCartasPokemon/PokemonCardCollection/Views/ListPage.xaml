@@ -34,7 +34,7 @@
 
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="x:Object">
-                    <Frame Margin="0,6" Padding="12" CornerRadius="12" HasShadow="True" BorderColor="LightGray">
+                    <Border Margin="0,6" Padding="12" StrokeShape="RoundRectangle 12" Stroke="LightGray">
                         <Grid ColumnDefinitions="80,*" ColumnSpacing="12">
                             <!-- Card thumbnail -->
                             <Image Grid.Column="0"
@@ -58,7 +58,7 @@
                                 </Label>
                             </VerticalStackLayout>
                         </Grid>
-                    </Frame>
+                    </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

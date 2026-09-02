@@ -10,13 +10,13 @@
         <VerticalStackLayout Spacing="16">
 
             <!-- Card image -->
-            <Frame CornerRadius="16" Padding="0" HasShadow="True" HorizontalOptions="Center"
-                   IsClippedToBounds="True" HeightRequest="260" WidthRequest="260">
+            <Border StrokeShape="RoundRectangle 16" Padding="0" HorizontalOptions="Center"
+                    HeightRequest="260" WidthRequest="260">
                 <Image Source="{Binding Card.ImageUri}"
                        Aspect="AspectFill"
                        HeightRequest="260"
                        WidthRequest="260" />
-            </Frame>
+            </Border>
 
             <!-- Name and Favorite -->
             <Grid ColumnDefinitions="*,Auto">
@@ -36,7 +36,7 @@
             </Grid>
 
             <!-- Info rows -->
-            <Frame Padding="16" CornerRadius="12" BorderColor="LightGray" HasShadow="False">
+            <Border Padding="16" StrokeShape="RoundRectangle 12" Stroke="LightGray">
                 <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" RowSpacing="10" ColumnSpacing="12">
                     <Label Grid.Row="0" Grid.Column="0" Text="Category:" FontAttributes="Bold" />
                     <Label Grid.Row="0" Grid.Column="1" Text="{Binding Card.Category}" />
@@ -54,7 +54,7 @@
                         </Label.Text>
                     </Label>
                 </Grid>
-            </Frame>
+            </Border>
 
             <!-- Description -->
             <Label Text="{Binding Card.Description}"

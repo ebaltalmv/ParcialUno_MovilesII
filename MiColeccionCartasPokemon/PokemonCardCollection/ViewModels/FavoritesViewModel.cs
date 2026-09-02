@@ -21,14 +21,14 @@ public partial class FavoritesViewModel : ObservableObject
         _repository = repository;
     }
 
-    /// <summary>Loads all favorite cards from the repository.</summary>
+    // Carga las cartas favoritas desde el repositorio
     [RelayCommand]
     public void LoadFavorites()
     {
         FavoriteCards = new ObservableCollection<PokemonCard>(_repository.GetFavorites());
     }
 
-    /// <summary>Navigates to the Detail page for a selected favorite card.</summary>
+    // Navega a la pantalla de detalle de la carta seleccionada
     [RelayCommand]
     private async Task GoToDetail(PokemonCard card)
     {
