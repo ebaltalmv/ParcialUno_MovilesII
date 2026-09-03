@@ -39,6 +39,7 @@ public partial class DetailViewModel : ObservableObject
         _repository.ToggleFavorite(Card.Id);
         // Refresh the card object so the UI updates
         Card = _repository.GetById(Card.Id);
+        OnPropertyChanged(nameof(Card));
     }
 
     /// <summary>Navigates to the Form page to edit the current card.</summary>

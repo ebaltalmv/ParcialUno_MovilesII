@@ -14,15 +14,24 @@ colors:
   tertiary-container: '#FFE873'
   on-tertiary-container: '#4D3E00'
   background: '#F8F9FA'
+  background-dark: '#121212'
   on-background: '#1A1C1E'
+  on-background-dark: '#FFFFFF'
   surface: '#FFFFFF'
+  surface-dark: '#1E1E1E'
   on-surface: '#1A1C1E'
+  on-surface-dark: '#FFFFFF'
   surface-variant: '#E7E0EC'
+  surface-variant-dark: '#49454F'
   on-surface-variant: '#49454F'
+  on-surface-variant-dark: '#CAC4D0'
   outline: '#79747E'
+  outline-dark: '#938F99'
   surface-tint: '#E3350D'
   error: '#B3261E'
+  error-dark: '#F2B8B5'
   on-error: '#FFFFFF'
+  on-error-dark: '#601410'
 typography:
   display:
     fontFamily: 'OpenSans-Bold'
@@ -63,12 +72,15 @@ spacing:
 ## Concepto Visual
 Este sistema de diseño está optimizado para construirse **únicamente usando .NET MAUI con C# y XAML**. El diseño abandona efectos web complejos como el "glassmorphism" en favor de una **UI táctil, limpia y nativa**, basada en sombras sutiles (Shadow) y bordes redondeados (Border). La paleta está inspirada en los colores clásicos de la franquicia pero afinada para interfaces modernas.
 
-## Colores (Para usar en Colors.xaml)
-Los colores están pensados para soportar `AppThemeBinding` fácilmente:
+## Colores (Para usar en Colors.xaml) y Modo Oscuro
+Los colores están pensados para soportar `AppThemeBinding` para modo claro y oscuro:
 - **Primary (Rojo Pokémon):** Para Action Buttons (Guardar, Buscar).
 - **Secondary (Azul Pokémon):** Elementos de navegación y acentos.
-- **Tertiary (Amarillo Eléctrico):** Destacar rarezas y tags (Shiny, Holo).
-- **Backgrounds:** Fondos grises claros (`#F8F9FA`) con tarjetas puramente blancas (`#FFFFFF`) para generar contraste.
+- **Tertiary (Amarillo Eléctrico):** Destacar rarezas, tags (Shiny, Holo) y el indicador de Favoritos (★).
+- **Backgrounds:** Fondos grises claros (`#F8F9FA`) en modo claro y grises oscuros (`#121212`) en modo oscuro.
+- **Surfaces (Tarjetas):** Blancas (`#FFFFFF`) en modo claro y grises elevados (`#1E1E1E`) en oscuro.
+- **Uso Obligatorio:** Es mandatorio usar `AppThemeBinding` (ej. `BackgroundColor="{AppThemeBinding Light={StaticResource Background}, Dark={StaticResource BackgroundDark}}"`) en páginas, textos y bordes para garantizar legibilidad.
+- **AppShell:** La barra de navegación debe sobreescribir el color morado por defecto de MAUI aplicando explícitamente `Shell.BackgroundColor` y `Shell.TitleColor` en el archivo `AppShell.xaml`.
 
 ## Tipografía
 Fuentes empaquetadas (ej. `OpenSans-Regular.ttf`, `OpenSans-Semibold.ttf`) o tipografía del sistema:
@@ -77,10 +89,12 @@ Fuentes empaquetadas (ej. `OpenSans-Regular.ttf`, `OpenSans-Semibold.ttf`) o tip
 - Utiliza la propiedad `FontAttributes="Bold"` nativa de MAUI en controles `Label`.
 
 ## Componentes de MAUI Recomendados
-- **Tarjetas de Pokémon:** Emplear el control `<Border>` en lugar del clásico `<Frame>`. El `<Border>` de MAUI permite especificar `StrokeShape="RoundRectangle 16"` y manejar recortes (`IsClippedToBounds`) correctamente. Utiliza la propiedad `Shadow` para profundidad.
-- **Grillas y Listas:** Usar `<CollectionView>` con `GridItemsLayout` a 2 o 3 columnas, definiendo `HorizontalItemSpacing="16"` y `VerticalItemSpacing="16"`.
+- **Tarjetas de Pokémon:** Emplear el control `<Border>` en lugar del clásico `<Frame>`. El `<Border>` de MAUI permite especificar `StrokeShape="RoundRectangle 16"` (Nota: NO uses la propiedad `IsClippedToBounds` ya que causa error de compilación en MAUI 7/8; el Border recorta automáticamente). Utiliza la propiedad `Shadow` para profundidad.
+- **Interacción en Listas:** En los `CollectionView`, usar SIEMPRE `SelectionMode="None"` para evitar que el color de fondo de selección nativo desborde las esquinas curvas. En su lugar, agrega un `<TapGestureRecognizer>` dentro del `Border` de la tarjeta para manejar la navegación o el toque.
+- **Grillas y Listas (Responsividad):** Usar `<CollectionView>` con `GridItemsLayout`. Para hacer el diseño adaptativo entre móvil, tablet y escritorio, usa la extensión `OnIdiom`: `Span="{OnIdiom Phone=2, Tablet=4, Desktop=6}"` con `HorizontalItemSpacing="16"` y `VerticalItemSpacing="16"`.
 - **Botones:** Utilizar `<Button>` con `CornerRadius="8"`. Altura mínima recomendada de `48` para asegurar un buen Touch Target móvil.
 - **Tags de Tipo:** Pequeños `<Border>` circulares (`RoundRectangle 999`) con texto o íconos.
+- **Favoritos:** Se utiliza el caracter de estrella (★ relleno para favorito, ☆ contorno para no favorito) junto a un `DataTrigger` o conversor, en lugar de mostrar textos booleanos como "True/False".
 
 ## Arquitectura de Layouts
 Priorizar `Grid` para interfaces complejas y `VerticalStackLayout` / `HorizontalStackLayout` con `Spacing="16"` en lugar de aplicar `Margins` individuales extensos. El padding general de la pantalla o de la página raíz debe ser `Padding="16"`.

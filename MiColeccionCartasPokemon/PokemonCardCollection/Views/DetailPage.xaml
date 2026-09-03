@@ -2,10 +2,16 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:PokemonCardCollection.ViewModels"
+             xmlns:converters="clr-namespace:PokemonCardCollection.Converters"
              x:Class="PokemonCardCollection.Views.DetailPage"
              x:DataType="vm:DetailViewModel"
              Title="Card Details"
              BackgroundColor="{AppThemeBinding Light={StaticResource Background}, Dark={StaticResource BackgroundDark}}">
+
+    <ContentPage.Resources>
+        <converters:CategoryColorConverter x:Key="CategoryColorConverter" />
+        <converters:RarityColorConverter x:Key="RarityColorConverter" />
+    </ContentPage.Resources>
 
     <ScrollView Padding="16">
         <VerticalStackLayout Spacing="16">
@@ -30,22 +36,24 @@
                        FontAttributes="Bold"
                        VerticalTextAlignment="Center"
                        TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
-                <Button Grid.Column="1"
-                        Command="{Binding ToggleFavoriteCommand}"
-                        FontSize="24"
-                        BackgroundColor="Transparent"
-                        TextColor="{StaticResource Tertiary}"
-                        HeightRequest="48"
-                        WidthRequest="48">
-                    <Button.Triggers>
-                        <DataTrigger TargetType="Button" Binding="{Binding Card.IsFavorite}" Value="True">
+                <Label Grid.Column="1"
+                       FontSize="36"
+                       TextColor="{StaticResource Tertiary}"
+                       VerticalTextAlignment="Center"
+                       HorizontalTextAlignment="Center"
+                       Margin="0,0,16,0">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ToggleFavoriteCommand}" />
+                    </Label.GestureRecognizers>
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding Card.IsFavorite}" Value="True">
                             <Setter Property="Text" Value="★" />
                         </DataTrigger>
-                        <DataTrigger TargetType="Button" Binding="{Binding Card.IsFavorite}" Value="False">
+                        <DataTrigger TargetType="Label" Binding="{Binding Card.IsFavorite}" Value="False">
                             <Setter Property="Text" Value="☆" />
                         </DataTrigger>
-                    </Button.Triggers>
-                </Button>
+                    </Label.Triggers>
+                </Label>
             </Grid>
 
             <!-- Info rows -->
@@ -55,13 +63,13 @@
                 </Border.Shadow>
                 <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" RowSpacing="12" ColumnSpacing="16">
                     <Label Grid.Row="0" Grid.Column="0" Text="Category:" FontAttributes="Bold" VerticalTextAlignment="Center" TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
-                    <Border Grid.Row="0" Grid.Column="1" StrokeShape="RoundRectangle 999" BackgroundColor="{StaticResource Secondary}" Padding="12,4" StrokeThickness="0" HorizontalOptions="Start">
-                        <Label Text="{Binding Card.Category}" TextColor="{StaticResource OnSecondary}" FontAttributes="Bold" />
+                    <Border Grid.Row="0" Grid.Column="1" StrokeShape="RoundRectangle 999" BackgroundColor="{Binding Card.Category, Converter={StaticResource CategoryColorConverter}}" Padding="12,4" StrokeThickness="0" HorizontalOptions="Start">
+                        <Label Text="{Binding Card.Category}" TextColor="White" FontAttributes="Bold" />
                     </Border>
 
                     <Label Grid.Row="1" Grid.Column="0" Text="Rarity:" FontAttributes="Bold" VerticalTextAlignment="Center" TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
-                    <Border Grid.Row="1" Grid.Column="1" StrokeShape="RoundRectangle 999" BackgroundColor="{StaticResource Tertiary}" Padding="12,4" StrokeThickness="0" HorizontalOptions="Start">
-                        <Label Text="{Binding Card.Rarity}" TextColor="{StaticResource OnTertiary}" FontAttributes="Bold" />
+                    <Border Grid.Row="1" Grid.Column="1" StrokeShape="RoundRectangle 999" BackgroundColor="{Binding Card.Rarity, Converter={StaticResource RarityColorConverter}}" Padding="12,4" StrokeThickness="0" HorizontalOptions="Start">
+                        <Label Text="{Binding Card.Rarity}" TextColor="White" FontAttributes="Bold" />
                     </Border>
 
                     <Label Grid.Row="2" Grid.Column="0" Text="Condition:" FontAttributes="Bold" VerticalTextAlignment="Center" TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
