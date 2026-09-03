@@ -2,51 +2,57 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:PokemonCardCollection.ViewModels"
-             xmlns:models="clr-namespace:PokemonCardCollection.Models"
              x:Class="PokemonCardCollection.Views.FavoritesPage"
              x:DataType="vm:FavoritesViewModel"
              Title="Favorites"
-             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource OffBlack}}">
+             BackgroundColor="{AppThemeBinding Light={StaticResource Background}, Dark={StaticResource BackgroundDark}}">
 
-    <Grid RowDefinitions="*" Padding="16">
+    <Grid Padding="16">
 
+        <!-- Favorites list -->
         <CollectionView ItemsSource="{Binding FavoriteCards}"
-                        SelectionMode="Single"
-                        SelectionChangedCommand="{Binding GoToDetailCommand}"
-                        SelectionChangedCommandParameter="{Binding Source={RelativeSource Self}, Path=SelectedItem}">
+                        SelectionMode="None">
+                        
             <CollectionView.ItemsLayout>
-                <GridItemsLayout Orientation="Vertical" Span="1" VerticalItemSpacing="16" />
+                <GridItemsLayout Orientation="Vertical" Span="{OnIdiom Phone=2, Tablet=4, Desktop=6}" VerticalItemSpacing="16" HorizontalItemSpacing="16" />
             </CollectionView.ItemsLayout>
 
             <CollectionView.EmptyView>
                 <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
-                    <Label Text="No favorites yet!" FontSize="20" HorizontalTextAlignment="Center" FontAttributes="Bold" />
-                    <Label Text="Mark cards as ★ to see them here." FontSize="14" TextColor="{StaticResource Outline}" HorizontalTextAlignment="Center" />
+                    <Label Text="No favorites yet!" FontSize="20" HorizontalTextAlignment="Center" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource OnBackground}, Dark={StaticResource OnBackgroundDark}}" />
+                    <Label Text="Mark cards as ★ to see them here." FontSize="14" TextColor="{AppThemeBinding Light={StaticResource Outline}, Dark={StaticResource OutlineDark}}" HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
 
             <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:PokemonCard">
-                    <Border BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Black}}" Padding="12">
-                        <Grid ColumnDefinitions="80,*" ColumnSpacing="12">
-                            <Image Grid.Column="0"
-                                   Source="{Binding ImageUri}"
-                                   Aspect="AspectFill"
-                                   HeightRequest="80"
-                                   WidthRequest="80" />
-                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
-                                <Label Text="{Binding Name}" FontSize="18" FontAttributes="Bold" />
-                                <HorizontalStackLayout Spacing="8">
-                                    <Border StrokeShape="RoundRectangle 999" BackgroundColor="{StaticResource Secondary}" Padding="8,4" StrokeThickness="0">
-                                        <Label Text="{Binding Category}" FontSize="12" TextColor="{StaticResource White}" FontAttributes="Bold" />
+                <DataTemplate x:DataType="x:Object">
+                    <Border BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}" 
+                            StrokeShape="RoundRectangle 16"
+                            StrokeThickness="0"
+                            Padding="12">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:FavoritesViewModel}}, Path=GoToDetailCommand}" CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,4" Radius="8" Opacity="0.1"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="8">
+                            <Image Source="{Binding ImageUri}"
+                                   Aspect="AspectFit"
+                                   HeightRequest="120"
+                                   HorizontalOptions="Center" />
+                            <VerticalStackLayout VerticalOptions="Center" Spacing="4">
+                                <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                                <HorizontalStackLayout Spacing="4" HorizontalOptions="Center">
+                                    <Border StrokeShape="RoundRectangle 999" BackgroundColor="{StaticResource Secondary}" Padding="6,2" StrokeThickness="0">
+                                        <Label Text="{Binding Category}" FontSize="10" TextColor="{StaticResource OnSecondary}" FontAttributes="Bold" />
                                     </Border>
-                                    <Border StrokeShape="RoundRectangle 999" BackgroundColor="{StaticResource Tertiary}" Padding="8,4" StrokeThickness="0">
-                                        <Label Text="{Binding Rarity}" FontSize="12" TextColor="{StaticResource Black}" FontAttributes="Bold" />
+                                    <Border StrokeShape="RoundRectangle 999" BackgroundColor="{StaticResource Tertiary}" Padding="6,2" StrokeThickness="0">
+                                        <Label Text="{Binding Rarity}" FontSize="10" TextColor="{StaticResource OnTertiary}" FontAttributes="Bold" />
                                     </Border>
                                 </HorizontalStackLayout>
-                                <Label Text="★ Favorite" FontSize="13" TextColor="{StaticResource Tertiary}" FontAttributes="Bold" />
                             </VerticalStackLayout>
-                        </Grid>
+                        </VerticalStackLayout>
                     </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

@@ -5,18 +5,21 @@
              x:Class="PokemonCardCollection.Views.DetailPage"
              x:DataType="vm:DetailViewModel"
              Title="Card Details"
-             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource OffBlack}}">
+             BackgroundColor="{AppThemeBinding Light={StaticResource Background}, Dark={StaticResource BackgroundDark}}">
 
     <ScrollView Padding="16">
         <VerticalStackLayout Spacing="16">
 
             <!-- Card image -->
             <Border StrokeShape="RoundRectangle 16" Padding="0" HorizontalOptions="Center"
-                    HeightRequest="260" WidthRequest="260">
+                    HeightRequest="300" WidthRequest="220" StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,4" Radius="8" Opacity="0.1"/>
+                </Border.Shadow>
                 <Image Source="{Binding Card.ImageUri}"
-                       Aspect="AspectFill"
-                       HeightRequest="260"
-                       WidthRequest="260" />
+                       Aspect="AspectFit"
+                       HeightRequest="300"
+                       WidthRequest="220" />
             </Border>
 
             <!-- Name and Favorite -->
@@ -25,35 +28,47 @@
                        Text="{Binding Card.Name}"
                        FontSize="28"
                        FontAttributes="Bold"
-                       VerticalTextAlignment="Center" />
+                       VerticalTextAlignment="Center"
+                       TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
                 <Button Grid.Column="1"
-                        Text="{Binding Card.IsFavorite, Converter={x:Null}}" 
                         Command="{Binding ToggleFavoriteCommand}"
                         FontSize="24"
                         BackgroundColor="Transparent"
-                        TextColor="{StaticResource Tertiary}">
-                    <!-- Placeholder: show ★ or ☆ depending on IsFavorite -->
+                        TextColor="{StaticResource Tertiary}"
+                        HeightRequest="48"
+                        WidthRequest="48">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding Card.IsFavorite}" Value="True">
+                            <Setter Property="Text" Value="★" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Button" Binding="{Binding Card.IsFavorite}" Value="False">
+                            <Setter Property="Text" Value="☆" />
+                        </DataTrigger>
+                    </Button.Triggers>
                 </Button>
             </Grid>
 
             <!-- Info rows -->
-            <Border Padding="16" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Black}}">
+            <Border Padding="16" StrokeThickness="0" StrokeShape="RoundRectangle 16" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,4" Radius="8" Opacity="0.1"/>
+                </Border.Shadow>
                 <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" RowSpacing="12" ColumnSpacing="16">
-                    <Label Grid.Row="0" Grid.Column="0" Text="Category:" FontAttributes="Bold" />
-                    <Border Grid.Row="0" Grid.Column="1" StrokeShape="RoundRectangle 999" BackgroundColor="{StaticResource Secondary}" Padding="8,4" StrokeThickness="0" HorizontalOptions="Start">
-                        <Label Text="{Binding Card.Category}" TextColor="{StaticResource White}" FontAttributes="Bold" />
+                    <Label Grid.Row="0" Grid.Column="0" Text="Category:" FontAttributes="Bold" VerticalTextAlignment="Center" TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                    <Border Grid.Row="0" Grid.Column="1" StrokeShape="RoundRectangle 999" BackgroundColor="{StaticResource Secondary}" Padding="12,4" StrokeThickness="0" HorizontalOptions="Start">
+                        <Label Text="{Binding Card.Category}" TextColor="{StaticResource OnSecondary}" FontAttributes="Bold" />
                     </Border>
 
-                    <Label Grid.Row="1" Grid.Column="0" Text="Rarity:" FontAttributes="Bold" VerticalTextAlignment="Center" />
-                    <Border Grid.Row="1" Grid.Column="1" StrokeShape="RoundRectangle 999" BackgroundColor="{StaticResource Tertiary}" Padding="8,4" StrokeThickness="0" HorizontalOptions="Start">
-                        <Label Text="{Binding Card.Rarity}" TextColor="{StaticResource Black}" FontAttributes="Bold" />
+                    <Label Grid.Row="1" Grid.Column="0" Text="Rarity:" FontAttributes="Bold" VerticalTextAlignment="Center" TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                    <Border Grid.Row="1" Grid.Column="1" StrokeShape="RoundRectangle 999" BackgroundColor="{StaticResource Tertiary}" Padding="12,4" StrokeThickness="0" HorizontalOptions="Start">
+                        <Label Text="{Binding Card.Rarity}" TextColor="{StaticResource OnTertiary}" FontAttributes="Bold" />
                     </Border>
 
-                    <Label Grid.Row="2" Grid.Column="0" Text="Condition:" FontAttributes="Bold" />
-                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding Card.Condition}" />
+                    <Label Grid.Row="2" Grid.Column="0" Text="Condition:" FontAttributes="Bold" VerticalTextAlignment="Center" TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding Card.Condition}" VerticalTextAlignment="Center" TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
 
-                    <Label Grid.Row="3" Grid.Column="0" Text="Est. Value:" FontAttributes="Bold" />
-                    <Label Grid.Row="3" Grid.Column="1" TextColor="{StaticResource Primary}" FontAttributes="Bold">
+                    <Label Grid.Row="3" Grid.Column="0" Text="Est. Value:" FontAttributes="Bold" VerticalTextAlignment="Center" TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                    <Label Grid.Row="3" Grid.Column="1" TextColor="{StaticResource Primary}" FontAttributes="Bold" VerticalTextAlignment="Center">
                         <Label.Text>
                             <Binding Path="Card.EstimatedValue" StringFormat="$ {0:N2}" />
                         </Label.Text>
@@ -63,8 +78,8 @@
 
             <!-- Description -->
             <Label Text="{Binding Card.Description}"
-                   FontSize="15"
-                   TextColor="{StaticResource Outline}"
+                   FontSize="16"
+                   TextColor="{AppThemeBinding Light={StaticResource Outline}, Dark={StaticResource OnSurfaceVariantDark}}"
                    LineBreakMode="WordWrap" />
 
             <!-- Action buttons -->
@@ -73,15 +88,17 @@
                         Text="Edit"
                         Command="{Binding GoToEditCardCommand}"
                         BackgroundColor="{StaticResource Primary}"
-                        TextColor="{StaticResource White}"
+                        TextColor="{StaticResource OnPrimary}"
                         CornerRadius="8"
+                        HeightRequest="48"
                         FontAttributes="Bold" />
                 <Button Grid.Column="1"
                         Text="Delete"
                         Command="{Binding DeleteCardCommand}"
                         BackgroundColor="{StaticResource Error}"
-                        TextColor="{StaticResource White}"
+                        TextColor="{StaticResource OnError}"
                         CornerRadius="8"
+                        HeightRequest="48"
                         FontAttributes="Bold" />
             </Grid>
 
@@ -90,6 +107,7 @@
                     Command="{Binding GoBackCommand}"
                     BackgroundColor="Transparent"
                     TextColor="{StaticResource Primary}"
+                    HeightRequest="48"
                     FontAttributes="Bold" />
 
         </VerticalStackLayout>

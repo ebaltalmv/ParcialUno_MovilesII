@@ -5,7 +5,7 @@
              x:Class="PokemonCardCollection.Views.FormPage"
              x:DataType="vm:FormViewModel"
              Title="{Binding PageTitle}"
-             BackgroundColor="{AppThemeBinding Light={StaticResource BackgroundLight}, Dark={StaticResource OffBlack}}">
+             BackgroundColor="{AppThemeBinding Light={StaticResource Background}, Dark={StaticResource OnBackground}}">
 
     <ScrollView Padding="16">
         <VerticalStackLayout Spacing="16">
@@ -13,7 +13,7 @@
             <!-- Name -->
             <VerticalStackLayout Spacing="8">
                 <Label Text="Name" FontAttributes="Bold" />
-                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Black}}" Padding="4,0" StrokeThickness="0">
+                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource OnSurface}}" Padding="4,0" StrokeThickness="1" Stroke="{StaticResource Outline}">
                     <Entry Text="{Binding Name}" Placeholder="e.g. Charizard" />
                 </Border>
             </VerticalStackLayout>
@@ -21,7 +21,7 @@
             <!-- Category -->
             <VerticalStackLayout Spacing="8">
                 <Label Text="Category (Type)" FontAttributes="Bold" />
-                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Black}}" Padding="4,0" StrokeThickness="0">
+                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource OnSurface}}" Padding="4,0" StrokeThickness="1" Stroke="{StaticResource Outline}">
                     <Entry Text="{Binding Category}" Placeholder="e.g. Fire, Water, Electric…" />
                 </Border>
             </VerticalStackLayout>
@@ -29,7 +29,7 @@
             <!-- Rarity -->
             <VerticalStackLayout Spacing="8">
                 <Label Text="Rarity" FontAttributes="Bold" />
-                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Black}}" Padding="4,0" StrokeThickness="0">
+                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource OnSurface}}" Padding="4,0" StrokeThickness="1" Stroke="{StaticResource Outline}">
                     <Entry Text="{Binding Rarity}" Placeholder="e.g. Common, Rare Holo, Ultra Rare" />
                 </Border>
             </VerticalStackLayout>
@@ -37,7 +37,7 @@
             <!-- Condition -->
             <VerticalStackLayout Spacing="8">
                 <Label Text="Condition" FontAttributes="Bold" />
-                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Black}}" Padding="4,0" StrokeThickness="0">
+                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource OnSurface}}" Padding="4,0" StrokeThickness="1" Stroke="{StaticResource Outline}">
                     <Entry Text="{Binding Condition}" Placeholder="e.g. Mint, Near Mint, Played" />
                 </Border>
             </VerticalStackLayout>
@@ -45,7 +45,7 @@
             <!-- Estimated Value -->
             <VerticalStackLayout Spacing="8">
                 <Label Text="Estimated Value ($)" FontAttributes="Bold" />
-                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Black}}" Padding="4,0" StrokeThickness="0">
+                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource OnSurface}}" Padding="4,0" StrokeThickness="1" Stroke="{StaticResource Outline}">
                     <Entry Text="{Binding EstimatedValue}" Placeholder="0.00" Keyboard="Numeric" />
                 </Border>
             </VerticalStackLayout>
@@ -53,7 +53,7 @@
             <!-- Image URI -->
             <VerticalStackLayout Spacing="8">
                 <Label Text="Image URI" FontAttributes="Bold" />
-                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Black}}" Padding="4,0" StrokeThickness="0">
+                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource OnSurface}}" Padding="4,0" StrokeThickness="1" Stroke="{StaticResource Outline}">
                     <Entry Text="{Binding ImageUri}" Placeholder="Image filename or URL" />
                 </Border>
             </VerticalStackLayout>
@@ -61,7 +61,7 @@
             <!-- Description -->
             <VerticalStackLayout Spacing="8">
                 <Label Text="Description" FontAttributes="Bold" />
-                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource Black}}" Padding="4,0" StrokeThickness="0">
+                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource OnSurface}}" Padding="4,0" StrokeThickness="1" Stroke="{StaticResource Outline}">
                     <Editor Text="{Binding Description}" Placeholder="Card description…" HeightRequest="100" />
                 </Border>
             </VerticalStackLayout>
@@ -78,15 +78,19 @@
                         Text="Save"
                         Command="{Binding SaveCardCommand}"
                         BackgroundColor="{StaticResource Primary}"
-                        TextColor="{StaticResource White}"
+                        TextColor="{StaticResource OnPrimary}"
                         CornerRadius="8"
+                        HeightRequest="48"
                         FontAttributes="Bold" />
                 <Button Grid.Column="1"
                         Text="Cancel"
                         Command="{Binding CancelCommand}"
-                        BackgroundColor="{StaticResource Outline}"
-                        TextColor="{StaticResource White}"
+                        BackgroundColor="Transparent"
+                        BorderColor="{StaticResource Outline}"
+                        BorderWidth="1"
+                        TextColor="{StaticResource Outline}"
                         CornerRadius="8"
+                        HeightRequest="48"
                         FontAttributes="Bold" />
             </Grid>
 

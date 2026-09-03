@@ -4,7 +4,9 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:PokemonCardCollection.Views"
-    Title="Pokémon Card Collection">
+    Title="Pokémon Card Collection"
+    Shell.BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+    Shell.TitleColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}">
 
     <!-- Tab-based navigation: Collection and Favorites are always visible -->
     <TabBar>
