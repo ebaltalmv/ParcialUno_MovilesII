@@ -2,63 +2,85 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:PokemonCardCollection.ViewModels"
+             xmlns:converters="clr-namespace:PokemonCardCollection.Converters"
              x:Class="PokemonCardCollection.Views.ListPage"
              x:DataType="vm:ListViewModel"
-             Title="My Collection">
+             Title="My Collection"
+             BackgroundColor="{AppThemeBinding Light={StaticResource Background}, Dark={StaticResource BackgroundDark}}">
+
+    <ContentPage.Resources>
+        <converters:CategoryColorConverter x:Key="CategoryColorConverter" />
+        <converters:RarityColorConverter x:Key="RarityColorConverter" />
+    </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,*" Padding="16">
 
         <!-- Header with Add button -->
-        <HorizontalStackLayout Grid.Row="0" HorizontalOptions="End" Spacing="8" Margin="0,0,0,12">
+        <HorizontalStackLayout Grid.Row="0" HorizontalOptions="End" Spacing="8" Margin="0,0,0,16">
             <Button Text="＋ Add Card"
                     Command="{Binding GoToAddCardCommand}"
                     BackgroundColor="{StaticResource Primary}"
-                    TextColor="White"
+                    TextColor="{StaticResource OnPrimary}"
                     FontAttributes="Bold"
                     CornerRadius="8"
+                    HeightRequest="48"
                     Padding="16,8" />
         </HorizontalStackLayout>
 
         <!-- Card list -->
         <CollectionView Grid.Row="1"
                         ItemsSource="{Binding Cards}"
-                        SelectionMode="Single"
-                        SelectionChangedCommand="{Binding GoToDetailCommand}"
-                        SelectionChangedCommandParameter="{Binding Source={RelativeSource Self}, Path=SelectedItem}">
+                        SelectionMode="None">
+                        
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="{OnIdiom Phone=2, Tablet=4, Desktop=6}" VerticalItemSpacing="16" HorizontalItemSpacing="16" />
+            </CollectionView.ItemsLayout>
+
             <CollectionView.EmptyView>
                 <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
-                    <Label Text="No cards yet!" FontSize="20" HorizontalTextAlignment="Center" />
-                    <Label Text="Tap + Add Card to start your collection." FontSize="14" TextColor="Gray" HorizontalTextAlignment="Center" />
+                    <Label Text="No cards yet!" FontSize="20" HorizontalTextAlignment="Center" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource OnBackground}, Dark={StaticResource OnBackgroundDark}}" />
+                    <Label Text="Tap + Add Card to start your collection." FontSize="14" TextColor="{AppThemeBinding Light={StaticResource Outline}, Dark={StaticResource OutlineDark}}" HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
 
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="x:Object">
-                    <Frame Margin="0,6" Padding="12" CornerRadius="12" HasShadow="True" BorderColor="LightGray">
-                        <Grid ColumnDefinitions="80,*" ColumnSpacing="12">
+                    <Border BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}" 
+                            StrokeShape="RoundRectangle 16"
+                            StrokeThickness="0"
+                            Padding="12">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ListViewModel}}, Path=GoToDetailCommand}" CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,4" Radius="8" Opacity="0.1"/>
+                        </Border.Shadow>
+                        <VerticalStackLayout Spacing="8">
                             <!-- Card thumbnail -->
-                            <Image Grid.Column="0"
-                                   Source="{Binding ImageUri}"
-                                   Aspect="AspectFill"
-                                   HeightRequest="80"
-                                   WidthRequest="80" />
+                            <Image Source="{Binding ImageUri}"
+                                   Aspect="AspectFit"
+                                   HeightRequest="120"
+                                   HorizontalOptions="Center" />
 
                             <!-- Card info -->
-                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
-                                <Label Text="{Binding Name}" FontSize="18" FontAttributes="Bold" />
-                                <HorizontalStackLayout Spacing="8">
-                                    <Label Text="{Binding Category}" FontSize="13" TextColor="Gray" />
-                                    <Label Text="•" FontSize="13" TextColor="Gray" />
-                                    <Label Text="{Binding Rarity}" FontSize="13" TextColor="Gray" />
+                            <VerticalStackLayout VerticalOptions="Center" Spacing="4">
+                                <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                                <HorizontalStackLayout Spacing="4" HorizontalOptions="Center">
+                                    <Border StrokeShape="RoundRectangle 999" BackgroundColor="{Binding Category, Converter={StaticResource CategoryColorConverter}}" Padding="6,2" StrokeThickness="0">
+                                        <Label Text="{Binding Category}" FontSize="10" TextColor="White" FontAttributes="Bold" />
+                                    </Border>
+                                    <Border StrokeShape="RoundRectangle 999" BackgroundColor="{Binding Rarity, Converter={StaticResource RarityColorConverter}}" Padding="6,2" StrokeThickness="0">
+                                        <Label Text="{Binding Rarity}" FontSize="10" TextColor="White" FontAttributes="Bold" />
+                                    </Border>
                                 </HorizontalStackLayout>
-                                <Label FontSize="14" TextColor="Green">
+                                <Label FontSize="14" TextColor="{StaticResource Primary}" FontAttributes="Bold" HorizontalTextAlignment="Center">
                                     <Label.Text>
                                         <Binding Path="EstimatedValue" StringFormat="$ {0:N2}" />
                                     </Label.Text>
                                 </Label>
                             </VerticalStackLayout>
-                        </Grid>
-                    </Frame>
+                        </VerticalStackLayout>
+                    </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
