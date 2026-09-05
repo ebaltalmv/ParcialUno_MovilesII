@@ -1,6 +1,3 @@
 <Solution>
-  <Project Path="MiColeccionCartasPokemon/MiColeccionCartasPokemon.csproj" />
-  <Project Path="MigratioApp/MigratioApp.csproj" />
   <Project Path="PokemonCardCollection/PokemonCardCollection.csproj" />
-  <Project Path="SharedResources/SharedResources.csproj" />
 </Solution>
