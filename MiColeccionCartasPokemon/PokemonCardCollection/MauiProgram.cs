@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using PokemonCardCollection.Data;
+using PokemonCardCollection.Services;
 using PokemonCardCollection.ViewModels;
 using PokemonCardCollection.Views;
 
@@ -20,13 +21,16 @@ public static class MauiProgram
 
         // ----- Dependency Injection -----
 
+        // Servicios / HttpClient
+        builder.Services.AddHttpClient<ITcgdexService, TcgdexService>();
+
         // Data — singleton so all pages share the same in-memory data
         builder.Services.AddSingleton<PokemonCardRepository>();
 
         // ViewModels — transient so each navigation gets a fresh instance
         builder.Services.AddTransient<ListViewModel>();
         builder.Services.AddTransient<DetailViewModel>();
-        builder.Services.AddTransient<FavoritesViewModel>();
+        builder.Services.AddSingleton<FavoritesViewModel>();   // Singleton: conserva estado entre navegaciones
         builder.Services.AddTransient<FormViewModel>();
 
         // Views (Pages) — transient

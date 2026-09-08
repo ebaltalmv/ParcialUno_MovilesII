@@ -10,11 +10,11 @@ public partial class ListPage : ContentPage
         BindingContext = viewModel;
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
         // Refresh the list every time the page appears (e.g. after add/edit/delete)
         if (BindingContext is ListViewModel vm)
-            vm.LoadCardsCommand.Execute(null);
+            await vm.LoadCardsCommand.ExecuteAsync(null);
     }
 }

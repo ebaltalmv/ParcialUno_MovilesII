@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:PokemonCardCollection.ViewModels"
+             xmlns:models="clr-namespace:PokemonCardCollection.Models"
              xmlns:converters="clr-namespace:PokemonCardCollection.Converters"
              x:Class="PokemonCardCollection.Views.ListPage"
              x:DataType="vm:ListViewModel"
@@ -13,11 +14,17 @@
         <converters:RarityColorConverter x:Key="RarityColorConverter" />
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,*" Padding="16">
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="16" RowSpacing="12">
 
         <!-- Header with Add button -->
-        <HorizontalStackLayout Grid.Row="0" HorizontalOptions="End" Spacing="8" Margin="0,0,0,16">
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <Label Text="My Collection"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   VerticalOptions="Center"
+                   TextColor="{AppThemeBinding Light={StaticResource OnBackground}, Dark={StaticResource OnBackgroundDark}}" />
             <Button Text="＋ Add Card"
+                    Grid.Column="1"
                     Command="{Binding GoToAddCardCommand}"
                     BackgroundColor="{StaticResource Primary}"
                     TextColor="{StaticResource OnPrimary}"
@@ -25,10 +32,69 @@
                     CornerRadius="8"
                     HeightRequest="48"
                     Padding="16,8" />
-        </HorizontalStackLayout>
+                </Grid>
+
+                <VerticalStackLayout Grid.Row="1" Spacing="8">
+                    <SearchBar Placeholder="Buscar por nombre..."
+                           Text="{Binding SearchName, Mode=TwoWay}"
+                           SearchCommand="{Binding SearchCommand}"
+                           HeightRequest="48" />
+                    <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8">
+                    <Picker Title="Tipo"
+                        ItemsSource="{Binding AvailableTypes}"
+                        SelectedItem="{Binding SelectedType, Mode=TwoWay}"
+                        HorizontalOptions="Fill" />
+                    <Picker Grid.Column="1"
+                        Title="Rareza"
+                        ItemsSource="{Binding AvailableRarities}"
+                        SelectedItem="{Binding SelectedRarity, Mode=TwoWay}"
+                        HorizontalOptions="Fill" />
+                    <Button Grid.Column="2"
+                        Text="Buscar"
+                        Command="{Binding SearchCommand}"
+                        BackgroundColor="{StaticResource Primary}"
+                        TextColor="{StaticResource OnPrimary}"
+                        CornerRadius="8"
+                        HeightRequest="44"
+                        Padding="14,8" />
+                    </Grid>
+                </VerticalStackLayout>
+
+        <!-- Loading indicator -->
+                <ActivityIndicator Grid.Row="2"
+                           IsRunning="{Binding IsLoading}"
+                           IsVisible="{Binding IsLoading}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           Color="{StaticResource Primary}"
+                           HeightRequest="48"
+                           WidthRequest="48" />
+
+        <!-- Error panel -->
+        <VerticalStackLayout Grid.Row="2"
+                             IsVisible="{Binding HasError}"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center"
+                             Spacing="12">
+            <Label Text="⚠️" FontSize="48" HorizontalTextAlignment="Center" />
+            <Label Text="{Binding ErrorMessage}"
+                   FontSize="16"
+                   HorizontalTextAlignment="Center"
+                   TextColor="{StaticResource Error}"
+                   Margin="16,0" />
+            <Button Text="Reintentar"
+                    Command="{Binding LoadCardsCommand}"
+                    BackgroundColor="{StaticResource Primary}"
+                    TextColor="{StaticResource OnPrimary}"
+                    CornerRadius="8"
+                    HeightRequest="44"
+                    HorizontalOptions="Center"
+                    Padding="24,8"
+                    FontAttributes="Bold" />
+        </VerticalStackLayout>
 
         <!-- Card list -->
-        <CollectionView Grid.Row="1"
+        <CollectionView Grid.Row="2"
                         ItemsSource="{Binding Cards}"
                         SelectionMode="None">
                         
@@ -44,46 +110,83 @@
             </CollectionView.EmptyView>
 
             <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="x:Object">
-                    <Border BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}" 
-                            StrokeShape="RoundRectangle 16"
-                            StrokeThickness="0"
-                            Padding="12">
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ListViewModel}}, Path=GoToDetailCommand}" CommandParameter="{Binding .}" />
-                        </Border.GestureRecognizers>
-                        <Border.Shadow>
-                            <Shadow Brush="Black" Offset="0,4" Radius="8" Opacity="0.1"/>
-                        </Border.Shadow>
-                        <VerticalStackLayout Spacing="8">
-                            <!-- Card thumbnail -->
-                            <Image Source="{Binding ImageUri}"
-                                   Aspect="AspectFit"
-                                   HeightRequest="120"
-                                   HorizontalOptions="Center" />
+                <DataTemplate x:DataType="models:PokemonCard">
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItems Mode="Execute">
+                                <SwipeItem Text="Eliminar"
+                                           BackgroundColor="{StaticResource Error}"
+                                           Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ListViewModel}}, Path=DeleteCardCommand}"
+                                           CommandParameter="{Binding .}" />
+                            </SwipeItems>
+                        </SwipeView.RightItems>
 
-                            <!-- Card info -->
-                            <VerticalStackLayout VerticalOptions="Center" Spacing="4">
-                                <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
-                                <HorizontalStackLayout Spacing="4" HorizontalOptions="Center">
-                                    <Border StrokeShape="RoundRectangle 999" BackgroundColor="{Binding Category, Converter={StaticResource CategoryColorConverter}}" Padding="6,2" StrokeThickness="0">
-                                        <Label Text="{Binding Category}" FontSize="10" TextColor="White" FontAttributes="Bold" />
-                                    </Border>
-                                    <Border StrokeShape="RoundRectangle 999" BackgroundColor="{Binding Rarity, Converter={StaticResource RarityColorConverter}}" Padding="6,2" StrokeThickness="0">
-                                        <Label Text="{Binding Rarity}" FontSize="10" TextColor="White" FontAttributes="Bold" />
-                                    </Border>
-                                </HorizontalStackLayout>
-                                <Label FontSize="14" TextColor="{StaticResource Primary}" FontAttributes="Bold" HorizontalTextAlignment="Center">
-                                    <Label.Text>
-                                        <Binding Path="EstimatedValue" StringFormat="$ {0:N2}" />
-                                    </Label.Text>
-                                </Label>
+                        <Border BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}" 
+                                StrokeShape="RoundRectangle 16"
+                                StrokeThickness="0"
+                                Padding="12">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ListViewModel}}, Path=GoToDetailCommand}" CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Border.Shadow>
+                                <Shadow Brush="Black" Offset="0,4" Radius="8" Opacity="0.1"/>
+                            </Border.Shadow>
+                            <VerticalStackLayout Spacing="8">
+                                <!-- Card thumbnail -->
+                                <Image Source="{Binding ImageUri}"
+                                       Aspect="AspectFit"
+                                       HeightRequest="120"
+                                       HorizontalOptions="Center" />
+
+                                <!-- Card info -->
+                                <VerticalStackLayout VerticalOptions="Center" Spacing="4">
+                                    <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" TextColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" />
+                                    <HorizontalStackLayout Spacing="4" HorizontalOptions="Center">
+                                        <Border StrokeShape="RoundRectangle 999" BackgroundColor="{Binding Category, Converter={StaticResource CategoryColorConverter}}" Padding="6,2" StrokeThickness="0">
+                                            <Label Text="{Binding Category}" FontSize="10" TextColor="White" FontAttributes="Bold" />
+                                        </Border>
+                                        <Border StrokeShape="RoundRectangle 999" BackgroundColor="{Binding Rarity, Converter={StaticResource RarityColorConverter}}" Padding="6,2" StrokeThickness="0">
+                                            <Label Text="{Binding Rarity}" FontSize="10" TextColor="White" FontAttributes="Bold" />
+                                        </Border>
+                                    </HorizontalStackLayout>
+                                    <Label FontSize="14" TextColor="{StaticResource Primary}" FontAttributes="Bold" HorizontalTextAlignment="Center">
+                                        <Label.Text>
+                                            <Binding Path="EstimatedValue" StringFormat="$ {0:N2}" />
+                                        </Label.Text>
+                                    </Label>
+                                </VerticalStackLayout>
                             </VerticalStackLayout>
-                        </VerticalStackLayout>
-                    </Border>
+                        </Border>
+                    </SwipeView>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
+
+        <Grid Grid.Row="3" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="0,8,0,0">
+            <Button Text="Anterior"
+                Command="{Binding PreviousPageCommand}"
+                IsEnabled="{Binding CanGoPrevious}"
+                BackgroundColor="{StaticResource Primary}"
+                TextColor="{StaticResource OnPrimary}"
+                CornerRadius="8"
+                HeightRequest="44"
+                Padding="16,8" />
+            <Label Grid.Column="1"
+               Text="{Binding CurrentPage, StringFormat='Página {0}'}"
+               HorizontalTextAlignment="Center"
+               VerticalTextAlignment="Center"
+               FontAttributes="Bold"
+               TextColor="{AppThemeBinding Light={StaticResource OnBackground}, Dark={StaticResource OnBackgroundDark}}" />
+            <Button Grid.Column="2"
+                Text="Siguiente"
+                Command="{Binding NextPageCommand}"
+                IsEnabled="{Binding HasNextPage}"
+                BackgroundColor="{StaticResource Primary}"
+                TextColor="{StaticResource OnPrimary}"
+                CornerRadius="8"
+                HeightRequest="44"
+                Padding="16,8" />
+        </Grid>
 
     </Grid>
 

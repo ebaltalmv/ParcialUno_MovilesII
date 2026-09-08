@@ -18,19 +18,23 @@
                 </Border>
             </VerticalStackLayout>
 
-            <!-- Category -->
+            <!-- Category (Picker from API) -->
             <VerticalStackLayout Spacing="8">
                 <Label Text="Category (Type)" FontAttributes="Bold" />
                 <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}" Padding="4,0" StrokeThickness="1" Stroke="{StaticResource Outline}">
-                    <Entry Text="{Binding Category}" Placeholder="e.g. Fire, Water, Electric…" />
+                    <Picker Title="Selecciona un tipo"
+                            ItemsSource="{Binding AvailableTypes}"
+                            SelectedItem="{Binding Category}" />
                 </Border>
             </VerticalStackLayout>
 
-            <!-- Rarity -->
+            <!-- Rarity (Picker from API) -->
             <VerticalStackLayout Spacing="8">
                 <Label Text="Rarity" FontAttributes="Bold" />
                 <Border StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}" Padding="4,0" StrokeThickness="1" Stroke="{StaticResource Outline}">
-                    <Entry Text="{Binding Rarity}" Placeholder="e.g. Common, Rare Holo, Ultra Rare" />
+                    <Picker Title="Selecciona una rareza"
+                            ItemsSource="{Binding AvailableRarities}"
+                            SelectedItem="{Binding Rarity}" />
                 </Border>
             </VerticalStackLayout>
 

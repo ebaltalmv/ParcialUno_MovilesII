@@ -8,6 +8,7 @@ namespace PokemonCardCollection.ViewModels;
 
 /// <summary>
 /// ViewModel for the Favorites / Wishlist page — shows only cards marked as favorite.
+/// Registered as Singleton so its state persists between tab navigations.
 /// </summary>
 public partial class FavoritesViewModel : ObservableObject
 {
@@ -23,8 +24,9 @@ public partial class FavoritesViewModel : ObservableObject
 
     // Carga las cartas favoritas desde el repositorio
     [RelayCommand]
-    public void LoadFavorites()
+    public async Task LoadFavorites()
     {
+        await _repository.EnsureLoadedAsync();
         FavoriteCards = new ObservableCollection<PokemonCard>(_repository.GetFavorites());
     }
 

@@ -10,11 +10,11 @@ public partial class FavoritesPage : ContentPage
         BindingContext = viewModel;
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
         // Recargar las favoritas cada vez que la pantalla aparece
         if (BindingContext is FavoritesViewModel vm)
-            vm.LoadFavoritesCommand.Execute(null);
+            await vm.LoadFavoritesCommand.ExecuteAsync(null);
     }
 }
