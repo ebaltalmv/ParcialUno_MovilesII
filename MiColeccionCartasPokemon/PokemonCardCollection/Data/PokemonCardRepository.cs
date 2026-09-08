@@ -33,26 +33,53 @@ public class PokemonCardRepository
 
         try
         {
-            var dtos = await _http.GetFromJsonAsync<List<TcgCardDto>>("https://api.tcgdex.net/v2/en/cards?limit=50");
+            var dtos = await _http.GetFromJsonAsync<List<TcgCardDto>>("https://api.tcgdex.net/v2/en/cards?pagination:page=1&pagination:itemsPerPage=50");
 
             if (dtos != null)
             {
-                var newCards = dtos.Take(50).Select(d => new PokemonCard
+                int addedCount = 0;
+                foreach (var d in dtos)
                 {
-                    Id = d.Id ?? Guid.NewGuid().ToString(),
-                    Name = d.Name ?? "Unknown",
-                    ImageUri = !string.IsNullOrEmpty(d.Image) ? $"{d.Image}/low.webp" : string.Empty,
-                    Category = "Unknown",
-                    Rarity = "Common",
-                    Condition = "Mint",
-                    EstimatedValue = 0m,
-                    IsFavorite = false,
-                    Description = "Loaded from TCGdex API"
-                }).ToList();
+                    if (addedCount >= 15) break;
+                    if (string.IsNullOrEmpty(d.Image) || d.Name == "Unown") continue;
 
-                foreach (var card in newCards)
-                {
-                    Cards.Add(card);
+                    string imgUrl = $"{d.Image}/low.webp";
+                    try
+                    {
+                        var imgResponse = await _http.GetAsync(imgUrl, HttpCompletionOption.ResponseHeadersRead);
+                        if (!imgResponse.IsSuccessStatusCode) continue;
+
+                        var fullCard = await _http.GetFromJsonAsync<TcgCardFullDto>($"https://api.tcgdex.net/v2/en/cards/{d.Id}");
+                        if (fullCard == null) continue;
+
+                        decimal parsedPrice = 0m;
+                        var tcg = fullCard.Pricing?.TcgPlayer;
+                        if (tcg != null)
+                        {
+                            parsedPrice = tcg.Normal?.MarketPrice 
+                                ?? tcg.Holofoil?.MarketPrice 
+                                ?? tcg.ReverseHolofoil?.MarketPrice 
+                                ?? 0m;
+                        }
+
+                        Cards.Add(new PokemonCard
+                        {
+                            Id = fullCard.Id ?? Guid.NewGuid().ToString(),
+                            Name = fullCard.Name ?? "Unknown",
+                            ImageUri = imgUrl,
+                            Category = fullCard.Types?.FirstOrDefault() ?? fullCard.Category ?? "Unknown",
+                            Rarity = fullCard.Rarity ?? "Common",
+                            Condition = "Mint",
+                            EstimatedValue = parsedPrice,
+                            IsFavorite = false,
+                            Description = string.IsNullOrEmpty(fullCard.Description) ? "No description available." : fullCard.Description
+                        });
+                        addedCount++;
+                    }
+                    catch
+                    {
+                        // Ignore individual card fetch failures
+                    }
                 }
             }
             
@@ -134,4 +161,52 @@ public class TcgCardDto
 
     [JsonPropertyName("image")]
     public string? Image { get; set; }
+}
+
+public class TcgCardFullDto
+{
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
+
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+
+    [JsonPropertyName("category")]
+    public string? Category { get; set; }
+
+    [JsonPropertyName("rarity")]
+    public string? Rarity { get; set; }
+
+    [JsonPropertyName("types")]
+    public List<string>? Types { get; set; }
+
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("pricing")]
+    public PricingDto? Pricing { get; set; }
+}
+
+public class PricingDto
+{
+    [JsonPropertyName("tcgplayer")]
+    public TcgPlayerDto? TcgPlayer { get; set; }
+}
+
+public class TcgPlayerDto
+{
+    [JsonPropertyName("normal")]
+    public TcgPlayerVariantDto? Normal { get; set; }
+
+    [JsonPropertyName("holofoil")]
+    public TcgPlayerVariantDto? Holofoil { get; set; }
+
+    [JsonPropertyName("reverse-holofoil")]
+    public TcgPlayerVariantDto? ReverseHolofoil { get; set; }
+}
+
+public class TcgPlayerVariantDto
+{
+    [JsonPropertyName("marketPrice")]
+    public decimal? MarketPrice { get; set; }
 }
