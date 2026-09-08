@@ -26,7 +26,7 @@ public static class MauiProgram
         // ViewModels — transient so each navigation gets a fresh instance
         builder.Services.AddTransient<ListViewModel>();
         builder.Services.AddTransient<DetailViewModel>();
-        builder.Services.AddTransient<FavoritesViewModel>();
+        builder.Services.AddSingleton<FavoritesViewModel>();
         builder.Services.AddTransient<FormViewModel>();
 
         // Views (Pages) — transient

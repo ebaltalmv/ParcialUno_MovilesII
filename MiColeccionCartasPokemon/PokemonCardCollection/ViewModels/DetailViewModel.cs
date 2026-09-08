@@ -17,7 +17,7 @@ public partial class DetailViewModel : ObservableObject
     private PokemonCard? _card;
 
     [ObservableProperty]
-    private int _cardId;
+    private string _cardId = string.Empty;
 
     public DetailViewModel(PokemonCardRepository repository)
     {
@@ -25,9 +25,12 @@ public partial class DetailViewModel : ObservableObject
     }
 
     /// <summary>Called automatically when CardId changes via query parameter.</summary>
-    partial void OnCardIdChanged(int value)
+    partial void OnCardIdChanged(string value)
     {
-        Card = _repository.GetById(value);
+        if (!string.IsNullOrEmpty(value))
+        {
+            Card = _repository.GetById(value);
+        }
     }
 
     /// <summary>Toggles the favorite status of the current card.</summary>
@@ -51,14 +54,19 @@ public partial class DetailViewModel : ObservableObject
         await Shell.Current.GoToAsync($"FormPage?cardId={Card.Id}");
     }
 
-    /// <summary>Deletes the current card and navigates back.</summary>
+    /// <summary>Deletes the current card with confirmation and navigates back.</summary>
     [RelayCommand]
-    private async Task DeleteCard()
+    private async Task EliminarArticulo()
     {
         if (Card is null) return;
 
-        _repository.Delete(Card.Id);
-        await Shell.Current.GoToAsync("..");
+        bool answer = await Shell.Current.DisplayAlertAsync("Confirm Delete", $"Are you sure you want to delete {Card.Name}?", "Yes", "No");
+        
+        if (answer)
+        {
+            _repository.Delete(Card.Id);
+            await Shell.Current.GoToAsync("..");
+        }
     }
 
     /// <summary>Navigates back to the previous page.</summary>

@@ -7,7 +7,7 @@ namespace PokemonCardCollection.ViewModels;
 
 /// <summary>
 /// ViewModel for the Form page — reusable for both Add and Edit operations.
-/// When cardId == 0, a new card is created; otherwise the existing card is edited.
+/// When cardId is empty, a new card is created; otherwise the existing card is edited.
 /// </summary>
 [QueryProperty(nameof(CardId), "cardId")]
 public partial class FormViewModel : ObservableObject
@@ -16,7 +16,7 @@ public partial class FormViewModel : ObservableObject
     private bool _isEditing;
 
     [ObservableProperty]
-    private int _cardId;
+    private string _cardId = string.Empty;
 
     [ObservableProperty]
     private string _name = string.Empty;
@@ -51,9 +51,9 @@ public partial class FormViewModel : ObservableObject
     }
 
     /// <summary>Called automatically when CardId changes via query parameter.</summary>
-    partial void OnCardIdChanged(int value)
+    partial void OnCardIdChanged(string value)
     {
-        if (value > 0)
+        if (!string.IsNullOrEmpty(value))
         {
             _isEditing = true;
             PageTitle = "Edit Card";
@@ -80,11 +80,11 @@ public partial class FormViewModel : ObservableObject
 
     /// <summary>Saves the card (creates or updates) and navigates back.</summary>
     [RelayCommand]
-    private async Task SaveCard()
+    private async Task GuardarArticulo()
     {
         var card = new PokemonCard
         {
-            Id = _isEditing ? CardId : 0,
+            Id = _isEditing ? CardId : string.Empty, // Repository handles Guid creation if empty
             Name = Name,
             Category = Category,
             Rarity = Rarity,

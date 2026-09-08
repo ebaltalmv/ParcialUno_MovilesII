@@ -76,7 +76,7 @@
             <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,16,0,0">
                 <Button Grid.Column="0"
                         Text="Save"
-                        Command="{Binding SaveCardCommand}"
+                        Command="{Binding GuardarArticuloCommand}"
                         BackgroundColor="{StaticResource Primary}"
                         TextColor="{StaticResource OnPrimary}"
                         CornerRadius="8"

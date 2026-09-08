@@ -13,20 +13,44 @@ public partial class ListViewModel : ObservableObject
 {
     private readonly PokemonCardRepository _repository;
 
+    public ObservableCollection<PokemonCard> Cards => _repository.Cards;
+
     [ObservableProperty]
-    private ObservableCollection<PokemonCard> _cards = new();
+    private bool _isLoading;
+
+    [ObservableProperty]
+    private string _errorMessage = string.Empty;
+
+    public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
 
     public ListViewModel(PokemonCardRepository repository)
     {
         _repository = repository;
-        LoadCards();
+        _ = LoadDataAsync();
     }
 
-    /// <summary>Reloads the full card list from the repository.</summary>
-    [RelayCommand]
-    private void LoadCards()
+    private async Task LoadDataAsync()
     {
-        Cards = new ObservableCollection<PokemonCard>(_repository.GetAll());
+        IsLoading = true;
+        ErrorMessage = string.Empty;
+        OnPropertyChanged(nameof(HasError));
+
+        var error = await _repository.InitializeAsync();
+        
+        if (error != null)
+        {
+            ErrorMessage = error;
+            OnPropertyChanged(nameof(HasError));
+        }
+        
+        IsLoading = false;
+    }
+
+    /// <summary>Reloads the full card list from the repository (Optional if needed to retry).</summary>
+    [RelayCommand]
+    private async Task RetryLoad()
+    {
+        await LoadDataAsync();
     }
 
     /// <summary>Navigates to the Detail page for the selected card.</summary>
