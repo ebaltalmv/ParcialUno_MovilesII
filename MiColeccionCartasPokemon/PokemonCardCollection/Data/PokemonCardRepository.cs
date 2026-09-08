@@ -1,145 +1,67 @@
 using System.Collections.ObjectModel;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Net.Http.Json;
 using PokemonCardCollection.Models;
+using PokemonCardCollection.Services;
+using PokemonCardCollection.Data.DTOs;
 
 namespace PokemonCardCollection.Data;
 
 /// <summary>
-/// Repository that fetches data from TCGdex API and manages the in-memory collection.
+/// Repository that manages the in-memory collection of PokemonCards and coordinates API calls.
 /// </summary>
 public class PokemonCardRepository
 {
-    private readonly HttpClient _http;
+    private readonly PokemonApiService _apiService;
     
     public ObservableCollection<PokemonCard> Cards { get; } = new();
 
-    public PokemonCardRepository()
+    public PokemonCardRepository(PokemonApiService apiService)
     {
-        _http = new HttpClient
-        {
-            Timeout = TimeSpan.FromSeconds(8)
-        };
+        _apiService = apiService;
     }
 
     /// <summary>
-    /// Fetches cards from the TCGdex API and populates the ObservableCollection.
-    /// Handles loading errors internally, returning an error message if failed.
+    /// Fetches initial cards from the API and populates the ObservableCollection.
     /// </summary>
     public async Task<string?> InitializeAsync()
     {
-        if (Cards.Any()) return null; // Already loaded
+        if (Cards.Any()) return null;
 
-        try
+        var (cards, error) = await _apiService.FetchInitialCardsAsync();
+        
+        if (error != null)
         {
-            var dtos = await _http.GetFromJsonAsync<List<TcgCardDto>>("https://api.tcgdex.net/v2/en/cards?pagination:page=1&pagination:itemsPerPage=50");
+            return error;
+        }
 
-            if (dtos != null)
-            {
-                int addedCount = 0;
-                foreach (var d in dtos)
-                {
-                    if (addedCount >= 15) break;
-                    if (string.IsNullOrEmpty(d.Image) || d.Name == "Unown" || string.IsNullOrEmpty(d.Id)) continue;
+        foreach (var card in cards)
+        {
+            Cards.Add(card);
+        }
 
-                    var card = await GetFullCardAsync(d.Id, d.Image);
-                    if (card != null)
-                    {
-                        Cards.Add(card);
-                        addedCount++;
-                    }
-                }
-            }
-            
-            return null; // No errors
-        }
-        catch (TaskCanceledException)
-        {
-            return "La petición tardó demasiado tiempo (timeout). Verifica tu conexión e intenta de nuevo.";
-        }
-        catch (HttpRequestException)
-        {
-            return "No se pudo conectar al servidor o la ruta no existe.";
-        }
-        catch (JsonException)
-        {
-            return "La respuesta del servidor no se pudo interpretar como JSON.";
-        }
-        catch (Exception ex)
-        {
-            return $"Ocurrió un error inesperado: {ex.Message}";
-        }
+        return null;
     }
 
     /// <summary>
-    /// Searches the API for cards matching the given name query.
+    /// Searches the API for cards matching the query.
     /// </summary>
     public async Task<List<TcgCardDto>> SearchCardsAsync(string query)
     {
-        try
-        {
-            var url = $"https://api.tcgdex.net/v2/en/cards?name={Uri.EscapeDataString(query)}";
-            var dtos = await _http.GetFromJsonAsync<List<TcgCardDto>>(url);
-            if (dtos != null)
-            {
-                return dtos.Where(d => !string.IsNullOrEmpty(d.Image) && d.Name != "Unown").Take(30).ToList();
-            }
-        }
-        catch
-        {
-            // Ignore errors during search
-        }
-        return new List<TcgCardDto>();
+        return await _apiService.SearchCardsAsync(query);
     }
 
     /// <summary>
-    /// Fetches full card details and validates the image.
+    /// Fetches the full details of a specific card.
     /// </summary>
     public async Task<PokemonCard?> GetFullCardAsync(string id, string baseImageUri)
     {
-        try
-        {
-            string imgUrl = $"{baseImageUri}/low.webp";
-            var imgResponse = await _http.GetAsync(imgUrl, HttpCompletionOption.ResponseHeadersRead);
-            if (!imgResponse.IsSuccessStatusCode) return null;
-
-            var fullCard = await _http.GetFromJsonAsync<TcgCardFullDto>($"https://api.tcgdex.net/v2/en/cards/{id}");
-            if (fullCard == null) return null;
-
-            decimal parsedPrice = 0m;
-            var tcg = fullCard.Pricing?.TcgPlayer;
-            if (tcg != null)
-            {
-                parsedPrice = tcg.Normal?.MarketPrice 
-                    ?? tcg.Holofoil?.MarketPrice 
-                    ?? tcg.ReverseHolofoil?.MarketPrice 
-                    ?? 0m;
-            }
-
-            return new PokemonCard
-            {
-                Id = fullCard.Id ?? Guid.NewGuid().ToString(),
-                Name = fullCard.Name ?? "Unknown",
-                ImageUri = imgUrl,
-                Category = fullCard.Types?.FirstOrDefault() ?? fullCard.Category ?? "Unknown",
-                Rarity = fullCard.Rarity ?? "Common",
-                Condition = "Mint",
-                EstimatedValue = parsedPrice,
-                IsFavorite = false,
-                Description = string.IsNullOrEmpty(fullCard.Description) ? "No description available." : fullCard.Description
-            };
-        }
-        catch
-        {
-            return null;
-        }
+        var (card, _) = await _apiService.GetFullCardAsync(id, baseImageUri);
+        return card;
     }
 
     /// <summary>Returns a single card by its Id, or null.</summary>
     public PokemonCard? GetById(string id) => Cards.FirstOrDefault(c => c.Id == id);
 
-    /// <summary>Adds a new card and assigns it a unique Id if not present.</summary>
+    /// <summary>Adds a new card to the memory collection.</summary>
     public void Add(PokemonCard card)
     {
         if (string.IsNullOrEmpty(card.Id))
@@ -149,7 +71,7 @@ public class PokemonCardRepository
         Cards.Add(card);
     }
 
-    /// <summary>Updates an existing card's data.</summary>
+    /// <summary>Updates an existing card's data in the memory collection.</summary>
     public void Update(PokemonCard card)
     {
         var index = Cards.ToList().FindIndex(c => c.Id == card.Id);
@@ -159,7 +81,7 @@ public class PokemonCardRepository
         }
     }
 
-    /// <summary>Removes a card by Id.</summary>
+    /// <summary>Removes a card from the memory collection by Id.</summary>
     public void Delete(string id)
     {
         var card = Cards.FirstOrDefault(c => c.Id == id);
@@ -176,70 +98,7 @@ public class PokemonCardRepository
         if (card is not null)
         {
             card.IsFavorite = !card.IsFavorite;
-            // Trigger a re-assignment to update bindings if necessary, 
-            // though ObservableObject properties inside card usually handle it.
-            // But since Cards is ObservableCollection, replacing it triggers collection change.
             Update(card);
         }
     }
-}
-
-public class TcgCardDto
-{
-    [JsonPropertyName("id")]
-    public string? Id { get; set; }
-
-    [JsonPropertyName("name")]
-    public string? Name { get; set; }
-
-    [JsonPropertyName("image")]
-    public string? Image { get; set; }
-}
-
-public class TcgCardFullDto
-{
-    [JsonPropertyName("id")]
-    public string? Id { get; set; }
-
-    [JsonPropertyName("name")]
-    public string? Name { get; set; }
-
-    [JsonPropertyName("category")]
-    public string? Category { get; set; }
-
-    [JsonPropertyName("rarity")]
-    public string? Rarity { get; set; }
-
-    [JsonPropertyName("types")]
-    public List<string>? Types { get; set; }
-
-    [JsonPropertyName("description")]
-    public string? Description { get; set; }
-
-    [JsonPropertyName("pricing")]
-    public PricingDto? Pricing { get; set; }
-}
-
-public class PricingDto
-{
-    [JsonPropertyName("tcgplayer")]
-    public TcgPlayerDto? TcgPlayer { get; set; }
-}
-
-public class TcgPlayerDto
-{
-    [JsonPropertyName("normal")]
-    public TcgPlayerVariantDto? Normal { get; set; }
-
-    [JsonPropertyName("holofoil")]
-    public TcgPlayerVariantDto? Holofoil { get; set; }
-
-    [JsonPropertyName("reverse-holofoil")]
-    public TcgPlayerVariantDto? ReverseHolofoil { get; set; }
-}
-
-public class TcgPlayerVariantDto
-{
-    [JsonPropertyName("marketPrice")]
-    public decimal? MarketPrice { get; set; }
 }

@@ -7,7 +7,7 @@ using PokemonCardCollection.Models;
 namespace PokemonCardCollection.ViewModels;
 
 /// <summary>
-/// ViewModel for the List page — displays all cards in the collection.
+/// ViewModel for the List page.
 /// </summary>
 public partial class ListViewModel : ObservableObject
 {
@@ -46,14 +46,12 @@ public partial class ListViewModel : ObservableObject
         IsLoading = false;
     }
 
-    /// <summary>Reloads the full card list from the repository (Optional if needed to retry).</summary>
     [RelayCommand]
     private async Task RetryLoad()
     {
         await LoadDataAsync();
     }
 
-    /// <summary>Navigates to the Detail page for the selected card.</summary>
     [RelayCommand]
     private async Task GoToDetail(PokemonCard card)
     {
@@ -62,7 +60,6 @@ public partial class ListViewModel : ObservableObject
         await Shell.Current.GoToAsync($"DetailPage?cardId={card.Id}");
     }
 
-    /// <summary>Navigates to the Form page to add a new card.</summary>
     [RelayCommand]
     private async Task GoToAddCard()
     {

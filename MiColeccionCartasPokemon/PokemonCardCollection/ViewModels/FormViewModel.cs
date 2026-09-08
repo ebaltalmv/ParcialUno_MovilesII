@@ -2,12 +2,13 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PokemonCardCollection.Data;
+using PokemonCardCollection.Data.DTOs;
 using PokemonCardCollection.Models;
 
 namespace PokemonCardCollection.ViewModels;
 
 /// <summary>
-/// ViewModel for the Form page — reusable for both Add and Edit operations.
+/// ViewModel for the Form page, reusable for both adding and editing cards.
 /// </summary>
 [QueryProperty(nameof(CardId), "cardId")]
 public partial class FormViewModel : ObservableObject
@@ -99,7 +100,7 @@ public partial class FormViewModel : ObservableObject
         {
             _isEditing = false;
             PageTitle = "Add Card";
-            IsCardSelected = false; // En modo Add, mostramos el buscador
+            IsCardSelected = false;
             SearchResults.Clear();
             SearchQuery = string.Empty;
             IsSearchEmpty = true;

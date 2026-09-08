@@ -7,7 +7,7 @@ using PokemonCardCollection.Models;
 namespace PokemonCardCollection.ViewModels;
 
 /// <summary>
-/// ViewModel for the Favorites / Wishlist page — shows only cards marked as favorite.
+/// ViewModel for the Favorites / Wishlist page.
 /// </summary>
 public partial class FavoritesViewModel : ObservableObject
 {
@@ -29,7 +29,7 @@ public partial class FavoritesViewModel : ObservableObject
         FavoriteCards = new ObservableCollection<PokemonCard>(_repository.Cards.Where(c => c.IsFavorite));
     }
 
-    // Navega a la pantalla de detalle de la carta seleccionada
+
     [RelayCommand]
     private async Task GoToDetail(PokemonCard card)
     {

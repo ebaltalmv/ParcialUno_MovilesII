@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using PokemonCardCollection.Data;
+using PokemonCardCollection.Services;
 using PokemonCardCollection.ViewModels;
 using PokemonCardCollection.Views;
 
@@ -19,6 +20,9 @@ public static class MauiProgram
             });
 
         // ----- Dependency Injection -----
+
+        // Services
+        builder.Services.AddSingleton<PokemonApiService>();
 
         // Data — singleton so all pages share the same in-memory data
         builder.Services.AddSingleton<PokemonCardRepository>();

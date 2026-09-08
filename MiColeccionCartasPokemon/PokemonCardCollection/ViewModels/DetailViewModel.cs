@@ -6,7 +6,7 @@ using PokemonCardCollection.Models;
 namespace PokemonCardCollection.ViewModels;
 
 /// <summary>
-/// ViewModel for the Detail page — shows full information about a selected card.
+/// ViewModel for the Detail page.
 /// </summary>
 [QueryProperty(nameof(CardId), "cardId")]
 public partial class DetailViewModel : ObservableObject
@@ -24,7 +24,6 @@ public partial class DetailViewModel : ObservableObject
         _repository = repository;
     }
 
-    /// <summary>Called automatically when CardId changes via query parameter.</summary>
     partial void OnCardIdChanged(string value)
     {
         if (!string.IsNullOrEmpty(value))
@@ -33,19 +32,16 @@ public partial class DetailViewModel : ObservableObject
         }
     }
 
-    /// <summary>Toggles the favorite status of the current card.</summary>
     [RelayCommand]
     private void ToggleFavorite()
     {
         if (Card is null) return;
 
         _repository.ToggleFavorite(Card.Id);
-        // Refresh the card object so the UI updates
         Card = _repository.GetById(Card.Id);
         OnPropertyChanged(nameof(Card));
     }
 
-    /// <summary>Navigates to the Form page to edit the current card.</summary>
     [RelayCommand]
     private async Task GoToEditCard()
     {
@@ -54,7 +50,6 @@ public partial class DetailViewModel : ObservableObject
         await Shell.Current.GoToAsync($"FormPage?cardId={Card.Id}");
     }
 
-    /// <summary>Deletes the current card with confirmation and navigates back.</summary>
     [RelayCommand]
     private async Task EliminarArticulo()
     {
@@ -69,7 +64,6 @@ public partial class DetailViewModel : ObservableObject
         }
     }
 
-    /// <summary>Navigates back to the previous page.</summary>
     [RelayCommand]
     private async Task GoBack()
     {
