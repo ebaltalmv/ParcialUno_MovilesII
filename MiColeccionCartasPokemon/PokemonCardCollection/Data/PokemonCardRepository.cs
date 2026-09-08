@@ -41,44 +41,13 @@ public class PokemonCardRepository
                 foreach (var d in dtos)
                 {
                     if (addedCount >= 15) break;
-                    if (string.IsNullOrEmpty(d.Image) || d.Name == "Unown") continue;
+                    if (string.IsNullOrEmpty(d.Image) || d.Name == "Unown" || string.IsNullOrEmpty(d.Id)) continue;
 
-                    string imgUrl = $"{d.Image}/low.webp";
-                    try
+                    var card = await GetFullCardAsync(d.Id, d.Image);
+                    if (card != null)
                     {
-                        var imgResponse = await _http.GetAsync(imgUrl, HttpCompletionOption.ResponseHeadersRead);
-                        if (!imgResponse.IsSuccessStatusCode) continue;
-
-                        var fullCard = await _http.GetFromJsonAsync<TcgCardFullDto>($"https://api.tcgdex.net/v2/en/cards/{d.Id}");
-                        if (fullCard == null) continue;
-
-                        decimal parsedPrice = 0m;
-                        var tcg = fullCard.Pricing?.TcgPlayer;
-                        if (tcg != null)
-                        {
-                            parsedPrice = tcg.Normal?.MarketPrice 
-                                ?? tcg.Holofoil?.MarketPrice 
-                                ?? tcg.ReverseHolofoil?.MarketPrice 
-                                ?? 0m;
-                        }
-
-                        Cards.Add(new PokemonCard
-                        {
-                            Id = fullCard.Id ?? Guid.NewGuid().ToString(),
-                            Name = fullCard.Name ?? "Unknown",
-                            ImageUri = imgUrl,
-                            Category = fullCard.Types?.FirstOrDefault() ?? fullCard.Category ?? "Unknown",
-                            Rarity = fullCard.Rarity ?? "Common",
-                            Condition = "Mint",
-                            EstimatedValue = parsedPrice,
-                            IsFavorite = false,
-                            Description = string.IsNullOrEmpty(fullCard.Description) ? "No description available." : fullCard.Description
-                        });
+                        Cards.Add(card);
                         addedCount++;
-                    }
-                    catch
-                    {
-                        // Ignore individual card fetch failures
                     }
                 }
             }
@@ -100,6 +69,70 @@ public class PokemonCardRepository
         catch (Exception ex)
         {
             return $"Ocurrió un error inesperado: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Searches the API for cards matching the given name query.
+    /// </summary>
+    public async Task<List<TcgCardDto>> SearchCardsAsync(string query)
+    {
+        try
+        {
+            var url = $"https://api.tcgdex.net/v2/en/cards?name={Uri.EscapeDataString(query)}";
+            var dtos = await _http.GetFromJsonAsync<List<TcgCardDto>>(url);
+            if (dtos != null)
+            {
+                return dtos.Where(d => !string.IsNullOrEmpty(d.Image) && d.Name != "Unown").Take(30).ToList();
+            }
+        }
+        catch
+        {
+            // Ignore errors during search
+        }
+        return new List<TcgCardDto>();
+    }
+
+    /// <summary>
+    /// Fetches full card details and validates the image.
+    /// </summary>
+    public async Task<PokemonCard?> GetFullCardAsync(string id, string baseImageUri)
+    {
+        try
+        {
+            string imgUrl = $"{baseImageUri}/low.webp";
+            var imgResponse = await _http.GetAsync(imgUrl, HttpCompletionOption.ResponseHeadersRead);
+            if (!imgResponse.IsSuccessStatusCode) return null;
+
+            var fullCard = await _http.GetFromJsonAsync<TcgCardFullDto>($"https://api.tcgdex.net/v2/en/cards/{id}");
+            if (fullCard == null) return null;
+
+            decimal parsedPrice = 0m;
+            var tcg = fullCard.Pricing?.TcgPlayer;
+            if (tcg != null)
+            {
+                parsedPrice = tcg.Normal?.MarketPrice 
+                    ?? tcg.Holofoil?.MarketPrice 
+                    ?? tcg.ReverseHolofoil?.MarketPrice 
+                    ?? 0m;
+            }
+
+            return new PokemonCard
+            {
+                Id = fullCard.Id ?? Guid.NewGuid().ToString(),
+                Name = fullCard.Name ?? "Unknown",
+                ImageUri = imgUrl,
+                Category = fullCard.Types?.FirstOrDefault() ?? fullCard.Category ?? "Unknown",
+                Rarity = fullCard.Rarity ?? "Common",
+                Condition = "Mint",
+                EstimatedValue = parsedPrice,
+                IsFavorite = false,
+                Description = string.IsNullOrEmpty(fullCard.Description) ? "No description available." : fullCard.Description
+            };
+        }
+        catch
+        {
+            return null;
         }
     }
 
