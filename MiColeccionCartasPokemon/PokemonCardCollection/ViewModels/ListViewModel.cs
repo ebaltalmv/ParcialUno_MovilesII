@@ -9,149 +9,52 @@ using PokemonCardCollection.Services;
 namespace PokemonCardCollection.ViewModels;
 
 /// <summary>
-/// ViewModel for the List page — displays all cards in the collection.
+/// ViewModel for the List page.
 /// </summary>
 public partial class ListViewModel : ObservableObject
 {
     private const int PageSize = 30;
     private readonly PokemonCardRepository _repository;
-    private readonly ITcgdexService _api;
-    private bool _filterOptionsLoaded;
 
-    [ObservableProperty]
-    private ObservableCollection<PokemonCard> _cards = new();
+    public ObservableCollection<PokemonCard> Cards => _repository.Cards;
 
     [ObservableProperty]
     private bool _isLoading;
 
     [ObservableProperty]
-    private bool _hasError;
-
-    [ObservableProperty]
     private string _errorMessage = string.Empty;
 
-    [ObservableProperty]
-    private int _currentPage = 1;
+    public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
 
-    [ObservableProperty]
-    private string _searchName = string.Empty;
-
-    [ObservableProperty]
-    private string _selectedType = "Todos";
-
-    [ObservableProperty]
-    private string _selectedRarity = "Todos";
-
-    [ObservableProperty]
-    private bool _hasNextPage;
-
-    [ObservableProperty]
-    private bool _canGoPrevious;
-
-    public ObservableCollection<string> AvailableTypes { get; } = new() { "Todos" };
-
-    public ObservableCollection<string> AvailableRarities { get; } = new() { "Todos" };
-
-    public ListViewModel(PokemonCardRepository repository, ITcgdexService api)
+    public ListViewModel(PokemonCardRepository repository)
     {
         _repository = repository;
-        _api = api;
+        _ = LoadDataAsync();
     }
 
-    /// <summary>Loads cards from the repository (triggers API fetch on first call).</summary>
-    [RelayCommand]
-    private async Task LoadCards()
+    private async Task LoadDataAsync()
     {
-        if (!_filterOptionsLoaded)
-            await LoadFilterOptionsAsync();
-
-        await LoadCurrentPageAsync();
-    }
-
-    [RelayCommand]
-    private async Task Search()
-    {
-        CurrentPage = 1;
-        await LoadCurrentPageAsync();
-    }
-
-    [RelayCommand]
-    private async Task NextPage()
-    {
-        if (IsLoading || !HasNextPage) return;
-
-        CurrentPage++;
-        await LoadCurrentPageAsync();
-    }
-
-    [RelayCommand]
-    private async Task PreviousPage()
-    {
-        if (IsLoading || CurrentPage <= 1) return;
-
-        CurrentPage--;
-        await LoadCurrentPageAsync();
-    }
-
-    private async Task LoadCurrentPageAsync()
-    {
-        if (IsLoading) return;
-
         IsLoading = true;
-        HasError = false;
         ErrorMessage = string.Empty;
+        OnPropertyChanged(nameof(HasError));
 
-        var count = await _repository.LoadCardsFromApiAsync(
-            CurrentPage,
-            EmptyAsNull(SearchName),
-            EmptyAsNull(SelectedType, "Todos"),
-            EmptyAsNull(SelectedRarity, "Todos"));
-
-        IsLoading = _repository.IsLoading;
-        HasError = _repository.HasError;
-        ErrorMessage = _repository.ErrorMessage;
-
-        Cards = new ObservableCollection<PokemonCard>(_repository.GetAll());
-        HasNextPage = !HasError && count == PageSize;
-        CanGoPrevious = CurrentPage > 1;
+        var error = await _repository.InitializeAsync();
+        
+        if (error != null)
+        {
+            ErrorMessage = error;
+            OnPropertyChanged(nameof(HasError));
+        }
+        
+        IsLoading = false;
     }
 
-    private async Task LoadFilterOptionsAsync()
+    [RelayCommand]
+    private async Task RetryLoad()
     {
-        try
-        {
-            var typesTask = _api.GetTypesAsync();
-            var raritiesTask = _api.GetRaritiesAsync();
-            await Task.WhenAll(typesTask, raritiesTask);
-
-            foreach (var type in typesTask.Result.Where(value => !string.IsNullOrWhiteSpace(value)).Distinct())
-                AvailableTypes.Add(type);
-
-            foreach (var rarity in raritiesTask.Result.Where(value => !string.IsNullOrWhiteSpace(value)).Distinct())
-                AvailableRarities.Add(rarity);
-
-            _filterOptionsLoaded = true;
-        }
-        catch (HttpRequestException)
-        {
-            // The card list can still be used with name search and pagination.
-        }
-        catch (TaskCanceledException)
-        {
-            // The card list can still be used with name search and pagination.
-        }
-        catch (JsonException)
-        {
-            // The card list can still be used with name search and pagination.
-        }
+        await LoadDataAsync();
     }
 
-    private static string? EmptyAsNull(string value, string? defaultValue = null)
-    {
-        return string.IsNullOrWhiteSpace(value) || value == defaultValue ? null : value;
-    }
-
-    /// <summary>Navigates to the Detail page for the selected card.</summary>
     [RelayCommand]
     private async Task GoToDetail(PokemonCard card)
     {
@@ -160,7 +63,6 @@ public partial class ListViewModel : ObservableObject
         await Shell.Current.GoToAsync($"DetailPage?cardId={card.Id}");
     }
 
-    /// <summary>Navigates to the Form page to add a new card.</summary>
     [RelayCommand]
     private async Task GoToAddCard()
     {

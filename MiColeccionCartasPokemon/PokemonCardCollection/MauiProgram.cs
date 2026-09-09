@@ -21,8 +21,8 @@ public static class MauiProgram
 
         // ----- Dependency Injection -----
 
-        // Servicios / HttpClient
-        builder.Services.AddHttpClient<ITcgdexService, TcgdexService>();
+        // Services
+        builder.Services.AddSingleton<PokemonApiService>();
 
         // Data — singleton so all pages share the same in-memory data
         builder.Services.AddSingleton<PokemonCardRepository>();
@@ -30,7 +30,7 @@ public static class MauiProgram
         // ViewModels — transient so each navigation gets a fresh instance
         builder.Services.AddTransient<ListViewModel>();
         builder.Services.AddTransient<DetailViewModel>();
-        builder.Services.AddSingleton<FavoritesViewModel>();   // Singleton: conserva estado entre navegaciones
+        builder.Services.AddSingleton<FavoritesViewModel>();
         builder.Services.AddTransient<FormViewModel>();
 
         // Views (Pages) — transient

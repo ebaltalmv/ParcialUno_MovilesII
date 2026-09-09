@@ -93,6 +93,24 @@
                     FontAttributes="Bold" />
         </VerticalStackLayout>
 
+        <!-- Loading Indicator -->
+        <ActivityIndicator Grid.Row="1" 
+                           IsRunning="{Binding IsLoading}" 
+                           IsVisible="{Binding IsLoading}" 
+                           HorizontalOptions="Center" 
+                           VerticalOptions="Center" 
+                           Color="{StaticResource Primary}" />
+
+        <!-- Error Message -->
+        <VerticalStackLayout Grid.Row="1" 
+                             IsVisible="{Binding HasError}" 
+                             HorizontalOptions="Center" 
+                             VerticalOptions="Center" 
+                             Spacing="12">
+            <Label Text="{Binding ErrorMessage}" TextColor="{StaticResource Error}" HorizontalTextAlignment="Center" />
+            <Button Text="Retry" Command="{Binding RetryLoadCommand}" BackgroundColor="{StaticResource Primary}" TextColor="{StaticResource OnPrimary}" CornerRadius="8" />
+        </VerticalStackLayout>
+
         <!-- Card list -->
         <CollectionView Grid.Row="2"
                         ItemsSource="{Binding Cards}"

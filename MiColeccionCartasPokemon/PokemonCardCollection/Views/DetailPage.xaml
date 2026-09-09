@@ -102,7 +102,7 @@
                         FontAttributes="Bold" />
                 <Button Grid.Column="1"
                         Text="Delete"
-                        Command="{Binding DeleteCardCommand}"
+                        Command="{Binding EliminarArticuloCommand}"
                         BackgroundColor="{StaticResource Error}"
                         TextColor="{StaticResource OnError}"
                         CornerRadius="8"

@@ -1,14 +1,15 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PokemonCardCollection.Data;
+using PokemonCardCollection.Data.DTOs;
 using PokemonCardCollection.Models;
 using PokemonCardCollection.Services;
 
 namespace PokemonCardCollection.ViewModels;
 
 /// <summary>
-/// ViewModel for the Form page — reusable for both Add and Edit operations.
-/// When cardId == 0, a new card is created; otherwise the existing card is edited.
+/// ViewModel for the Form page, reusable for both adding and editing cards.
 /// </summary>
 [QueryProperty(nameof(CardId), "cardId")]
 public partial class FormViewModel : ObservableObject
@@ -18,7 +19,7 @@ public partial class FormViewModel : ObservableObject
     private bool _isEditing;
 
     [ObservableProperty]
-    private int _cardId;
+    private string _cardId = string.Empty;
 
     [ObservableProperty]
     private string _name = string.Empty;
@@ -44,25 +45,41 @@ public partial class FormViewModel : ObservableObject
     [ObservableProperty]
     private bool _isFavorite;
 
+    public ObservableCollection<string> Conditions { get; } = new()
+    {
+        "Mint", "Near Mint", "Excellent", "Good", "Light Played", "Played", "Poor"
+    };
+
     [ObservableProperty]
     private string _pageTitle = "Add Card";
 
     [ObservableProperty]
-    private List<string> _availableTypes = new();
+    [NotifyPropertyChangedFor(nameof(IsSearchVisible))]
+    private bool _isCardSelected;
+
+    public bool IsSearchVisible => !IsCardSelected;
 
     [ObservableProperty]
-    private List<string> _availableRarities = new();
+    private string _searchQuery = string.Empty;
 
-    public FormViewModel(PokemonCardRepository repository, ITcgdexService api)
+    [ObservableProperty]
+    private ObservableCollection<TcgCardDto> _searchResults = new();
+
+    [ObservableProperty]
+    private bool _isSearching;
+
+    [ObservableProperty]
+    private bool _isSearchEmpty = true;
+
+    public FormViewModel(PokemonCardRepository repository)
     {
         _repository = repository;
         _api = api;
     }
 
-    /// <summary>Called automatically when CardId changes via query parameter.</summary>
-    partial void OnCardIdChanged(int value)
+    partial void OnCardIdChanged(string value)
     {
-        if (value > 0)
+        if (!string.IsNullOrEmpty(value))
         {
             _isEditing = true;
             PageTitle = "Edit Card";
@@ -78,40 +95,76 @@ public partial class FormViewModel : ObservableObject
                 ImageUri = card.ImageUri;
                 Description = card.Description;
                 IsFavorite = card.IsFavorite;
+
+                IsCardSelected = true;
             }
         }
         else
         {
             _isEditing = false;
             PageTitle = "Add Card";
+            IsCardSelected = false;
+            SearchResults.Clear();
+            SearchQuery = string.Empty;
+            IsSearchEmpty = true;
         }
     }
 
-    /// <summary>Loads category/type and rarity lists from the API for the Pickers.</summary>
     [RelayCommand]
-    private async Task InitializePickersAsync()
+    private async Task SearchApi()
     {
-        if (AvailableTypes.Count > 0 && AvailableRarities.Count > 0)
-            return;
-
-        try
+        if (string.IsNullOrWhiteSpace(SearchQuery)) return;
+        
+        IsSearching = true;
+        IsSearchEmpty = false;
+        SearchResults.Clear();
+        
+        var results = await _repository.SearchCardsAsync(SearchQuery);
+        foreach (var r in results)
         {
-            AvailableTypes = await _api.GetTypesAsync();
-            AvailableRarities = await _api.GetRaritiesAsync();
+            SearchResults.Add(r);
         }
-        catch
-        {
-            // If the API call fails, leave the lists empty — user can still type in a manual entry later
-        }
+        
+        IsSearching = false;
+        IsSearchEmpty = SearchResults.Count == 0;
     }
 
-    /// <summary>Saves the card (creates or updates) and navigates back.</summary>
     [RelayCommand]
-    private async Task SaveCard()
+    private async Task SelectApiCard(TcgCardDto selectedDto)
+    {
+        if (selectedDto == null || string.IsNullOrEmpty(selectedDto.Id) || string.IsNullOrEmpty(selectedDto.Image)) return;
+
+        IsSearching = true;
+        
+        var fullCard = await _repository.GetFullCardAsync(selectedDto.Id, selectedDto.Image);
+        if (fullCard != null)
+        {
+            Name = fullCard.Name;
+            Category = fullCard.Category;
+            Rarity = fullCard.Rarity;
+            EstimatedValue = fullCard.EstimatedValue;
+            ImageUri = fullCard.ImageUri;
+            Description = fullCard.Description;
+            
+            Condition = "Mint"; 
+            IsFavorite = false;
+            
+            IsCardSelected = true;
+        }
+        else
+        {
+            await Shell.Current.DisplayAlertAsync("Error", "No se pudo cargar el detalle de la carta.", "OK");
+        }
+        
+        IsSearching = false;
+    }
+
+    [RelayCommand]
+    private async Task GuardarArticulo()
     {
         var card = new PokemonCard
         {
-            Id = _isEditing ? CardId : 0,
+            Id = _isEditing ? CardId : string.Empty,
             Name = Name,
             Category = Category,
             Rarity = Rarity,
@@ -130,7 +183,6 @@ public partial class FormViewModel : ObservableObject
         await Shell.Current.GoToAsync("..");
     }
 
-    /// <summary>Cancels the operation and navigates back.</summary>
     [RelayCommand]
     private async Task Cancel()
     {
