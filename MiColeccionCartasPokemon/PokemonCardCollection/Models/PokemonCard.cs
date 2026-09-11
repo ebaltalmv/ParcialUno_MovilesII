@@ -5,7 +5,7 @@ namespace PokemonCardCollection.Models;
 /// </summary>
 public class PokemonCard
 {
-    public int Id { get; set; }
+    public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Category { get; set; } = string.Empty;       // e.g. Fire, Water, Grass, Electric…
     public string Rarity { get; set; } = string.Empty;         // e.g. Common, Uncommon, Rare, Ultra Rare

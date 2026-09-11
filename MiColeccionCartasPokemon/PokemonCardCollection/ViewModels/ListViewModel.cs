@@ -7,29 +7,51 @@ using PokemonCardCollection.Models;
 namespace PokemonCardCollection.ViewModels;
 
 /// <summary>
-/// ViewModel for the List page — displays all cards in the collection.
+/// ViewModel for the List page.
 /// </summary>
 public partial class ListViewModel : ObservableObject
 {
     private readonly PokemonCardRepository _repository;
 
+    public ObservableCollection<PokemonCard> Cards => _repository.Cards;
+
     [ObservableProperty]
-    private ObservableCollection<PokemonCard> _cards = new();
+    private bool _isLoading;
+
+    [ObservableProperty]
+    private string _errorMessage = string.Empty;
+
+    public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
 
     public ListViewModel(PokemonCardRepository repository)
     {
         _repository = repository;
-        LoadCards();
+        _ = LoadDataAsync();
     }
 
-    /// <summary>Reloads the full card list from the repository.</summary>
-    [RelayCommand]
-    private void LoadCards()
+    private async Task LoadDataAsync()
     {
-        Cards = new ObservableCollection<PokemonCard>(_repository.GetAll());
+        IsLoading = true;
+        ErrorMessage = string.Empty;
+        OnPropertyChanged(nameof(HasError));
+
+        var error = await _repository.InitializeAsync();
+        
+        if (error != null)
+        {
+            ErrorMessage = error;
+            OnPropertyChanged(nameof(HasError));
+        }
+        
+        IsLoading = false;
     }
 
-    /// <summary>Navigates to the Detail page for the selected card.</summary>
+    [RelayCommand]
+    private async Task RetryLoad()
+    {
+        await LoadDataAsync();
+    }
+
     [RelayCommand]
     private async Task GoToDetail(PokemonCard card)
     {
@@ -38,7 +60,6 @@ public partial class ListViewModel : ObservableObject
         await Shell.Current.GoToAsync($"DetailPage?cardId={card.Id}");
     }
 
-    /// <summary>Navigates to the Form page to add a new card.</summary>
     [RelayCommand]
     private async Task GoToAddCard()
     {

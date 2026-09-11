@@ -1,157 +1,104 @@
+using System.Collections.ObjectModel;
 using PokemonCardCollection.Models;
+using PokemonCardCollection.Services;
+using PokemonCardCollection.Data.DTOs;
 
 namespace PokemonCardCollection.Data;
 
 /// <summary>
-/// In-memory repository that supplies hard-coded sample Pokémon cards.
-/// Will be replaced by a real data source in Phase 2.
+/// Repository that manages the in-memory collection of PokemonCards and coordinates API calls.
 /// </summary>
 public class PokemonCardRepository
 {
-    private readonly List<PokemonCard> _cards;
-    private int _nextId;
+    private readonly PokemonApiService _apiService;
+    
+    public ObservableCollection<PokemonCard> Cards { get; } = new();
 
-    public PokemonCardRepository()
+    public PokemonCardRepository(PokemonApiService apiService)
     {
-        _cards = new List<PokemonCard>
-        {
-            new PokemonCard
-            {
-                Id = 1,
-                Name = "Charizard",
-                Category = "Fire",
-                Rarity = "Rare Holo",
-                Condition = "Near Mint",
-                EstimatedValue = 350.00m,
-                ImageUri = "charizard.png",
-                IsFavorite = true,
-                Description = "A powerful Fire/Flying Pokémon. Its flame burns hotter when it has experienced harsh battles."
-            },
-            new PokemonCard
-            {
-                Id = 2,
-                Name = "Pikachu",
-                Category = "Electric",
-                Rarity = "Common",
-                Condition = "Mint",
-                EstimatedValue = 15.00m,
-                ImageUri = "pikachu.png",
-                IsFavorite = true,
-                Description = "The iconic Electric-type mascot. It stores electricity in its cheek pouches."
-            },
-            new PokemonCard
-            {
-                Id = 3,
-                Name = "Blastoise",
-                Category = "Water",
-                Rarity = "Rare Holo",
-                Condition = "Played",
-                EstimatedValue = 120.00m,
-                ImageUri = "blastoise.png",
-                IsFavorite = false,
-                Description = "A Water-type Pokémon with powerful hydro cannons on its shell."
-            },
-            new PokemonCard
-            {
-                Id = 4,
-                Name = "Venusaur",
-                Category = "Grass",
-                Rarity = "Rare Holo",
-                Condition = "Near Mint",
-                EstimatedValue = 95.00m,
-                ImageUri = "venusaur.png",
-                IsFavorite = false,
-                Description = "A Grass/Poison-type Pokémon. The flower on its back blooms when absorbing sunlight."
-            },
-            new PokemonCard
-            {
-                Id = 5,
-                Name = "Mewtwo",
-                Category = "Psychic",
-                Rarity = "Ultra Rare",
-                Condition = "Mint",
-                EstimatedValue = 500.00m,
-                ImageUri = "mewtwo.png",
-                IsFavorite = true,
-                Description = "A genetically engineered Psychic-type Pokémon created from Mew's DNA."
-            },
-            new PokemonCard
-            {
-                Id = 6,
-                Name = "Gengar",
-                Category = "Ghost",
-                Rarity = "Rare",
-                Condition = "Near Mint",
-                EstimatedValue = 45.00m,
-                ImageUri = "gengar.png",
-                IsFavorite = false,
-                Description = "A Ghost/Poison-type Pokémon that hides in shadows and drops the room temperature."
-            },
-            new PokemonCard
-            {
-                Id = 7,
-                Name = "Dragonite",
-                Category = "Dragon",
-                Rarity = "Rare Holo",
-                Condition = "Mint",
-                EstimatedValue = 200.00m,
-                ImageUri = "dragonite.png",
-                IsFavorite = false,
-                Description = "A Dragon/Flying-type Pokémon. It can circle the globe in about 16 hours."
-            },
-            new PokemonCard
-            {
-                Id = 8,
-                Name = "Eevee",
-                Category = "Normal",
-                Rarity = "Common",
-                Condition = "Near Mint",
-                EstimatedValue = 10.00m,
-                ImageUri = "eevee.png",
-                IsFavorite = true,
-                Description = "A Normal-type Pokémon with an unstable genetic code that allows it to evolve into many forms."
-            }
-        };
-        _nextId = _cards.Max(c => c.Id) + 1;
+        _apiService = apiService;
     }
 
-    /// <summary>Returns all cards in the collection.</summary>
-    public List<PokemonCard> GetAll() => new(_cards);
+    /// <summary>
+    /// Fetches initial cards from the API and populates the ObservableCollection.
+    /// </summary>
+    public async Task<string?> InitializeAsync()
+    {
+        if (Cards.Any()) return null;
+
+        var (cards, error) = await _apiService.FetchInitialCardsAsync();
+        
+        if (error != null)
+        {
+            return error;
+        }
+
+        foreach (var card in cards)
+        {
+            Cards.Add(card);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Searches the API for cards matching the query.
+    /// </summary>
+    public async Task<List<TcgCardDto>> SearchCardsAsync(string query)
+    {
+        return await _apiService.SearchCardsAsync(query);
+    }
+
+    /// <summary>
+    /// Fetches the full details of a specific card.
+    /// </summary>
+    public async Task<PokemonCard?> GetFullCardAsync(string id, string baseImageUri)
+    {
+        var (card, _) = await _apiService.GetFullCardAsync(id, baseImageUri);
+        return card;
+    }
 
     /// <summary>Returns a single card by its Id, or null.</summary>
-    public PokemonCard? GetById(int id) => _cards.FirstOrDefault(c => c.Id == id);
+    public PokemonCard? GetById(string id) => Cards.FirstOrDefault(c => c.Id == id);
 
-    /// <summary>Returns only the cards marked as favorite.</summary>
-    public List<PokemonCard> GetFavorites() => _cards.Where(c => c.IsFavorite).ToList();
-
-    /// <summary>Adds a new card and assigns it a unique Id.</summary>
+    /// <summary>Adds a new card to the memory collection.</summary>
     public void Add(PokemonCard card)
     {
-        card.Id = _nextId++;
-        _cards.Add(card);
+        if (string.IsNullOrEmpty(card.Id))
+        {
+            card.Id = Guid.NewGuid().ToString();
+        }
+        Cards.Add(card);
     }
 
-    /// <summary>Updates an existing card's data.</summary>
+    /// <summary>Updates an existing card's data in the memory collection.</summary>
     public void Update(PokemonCard card)
     {
-        var index = _cards.FindIndex(c => c.Id == card.Id);
+        var index = Cards.ToList().FindIndex(c => c.Id == card.Id);
         if (index >= 0)
-            _cards[index] = card;
+        {
+            Cards[index] = card;
+        }
     }
 
-    /// <summary>Removes a card by Id.</summary>
-    public void Delete(int id)
+    /// <summary>Removes a card from the memory collection by Id.</summary>
+    public void Delete(string id)
     {
-        var card = _cards.FirstOrDefault(c => c.Id == id);
+        var card = Cards.FirstOrDefault(c => c.Id == id);
         if (card is not null)
-            _cards.Remove(card);
+        {
+            Cards.Remove(card);
+        }
     }
 
     /// <summary>Toggles the IsFavorite flag on a card.</summary>
-    public void ToggleFavorite(int id)
+    public void ToggleFavorite(string id)
     {
-        var card = _cards.FirstOrDefault(c => c.Id == id);
+        var card = Cards.FirstOrDefault(c => c.Id == id);
         if (card is not null)
+        {
             card.IsFavorite = !card.IsFavorite;
+            Update(card);
+        }
     }
 }
