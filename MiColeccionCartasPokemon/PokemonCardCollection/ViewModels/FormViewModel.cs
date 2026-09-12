@@ -57,6 +57,22 @@ public partial class FormViewModel : ObservableObject
 
     public bool IsSearchVisible => !IsCardSelected;
 
+    public ObservableCollection<string> AvailableTypes { get; } = new()
+    {
+        "All", "Colorless", "Darkness", "Dragon", "Fairy", "Fighting", "Fire", "Grass", "Lightning", "Metal", "Psychic", "Water"
+    };
+
+    public ObservableCollection<string> AvailableRarities { get; } = new()
+    {
+        "All", "Common", "Uncommon", "Rare", "Rare Holo", "Ultra Rare", "Secret Rare", "Double rare", "Illustration rare", "Special illustration rare", "Promo"
+    };
+
+    [ObservableProperty]
+    private string _selectedType = "Todos";
+
+    [ObservableProperty]
+    private string _selectedRarity = "Todas";
+
     [ObservableProperty]
     private string _searchQuery = string.Empty;
 
@@ -64,10 +80,22 @@ public partial class FormViewModel : ObservableObject
     private ObservableCollection<TcgCardDto> _searchResults = new();
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowInitialState))]
+    [NotifyPropertyChangedFor(nameof(ShowNoResults))]
     private bool _isSearching;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowInitialState))]
+    [NotifyPropertyChangedFor(nameof(ShowNoResults))]
     private bool _isSearchEmpty = true;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowInitialState))]
+    [NotifyPropertyChangedFor(nameof(ShowNoResults))]
+    private bool _hasSearched;
+
+    public bool ShowInitialState => !HasSearched && IsSearchEmpty && !IsSearching;
+    public bool ShowNoResults => HasSearched && IsSearchEmpty && !IsSearching;
 
     public FormViewModel(PokemonCardRepository repository)
     {
@@ -103,6 +131,9 @@ public partial class FormViewModel : ObservableObject
             IsCardSelected = false;
             SearchResults.Clear();
             SearchQuery = string.Empty;
+            SelectedType = "Todos";
+            SelectedRarity = "Todas";
+            HasSearched = false;
             IsSearchEmpty = true;
         }
     }
@@ -110,13 +141,22 @@ public partial class FormViewModel : ObservableObject
     [RelayCommand]
     private async Task SearchApi()
     {
-        if (string.IsNullOrWhiteSpace(SearchQuery)) return;
-        
+        bool hasQuery = !string.IsNullOrWhiteSpace(SearchQuery);
+        bool hasType = !string.IsNullOrWhiteSpace(SelectedType) && SelectedType != "Todos" && SelectedType != "All";
+        bool hasRarity = !string.IsNullOrWhiteSpace(SelectedRarity) && SelectedRarity != "Todas" && SelectedRarity != "All";
+
+        if (!hasQuery && !hasType && !hasRarity)
+        {
+            await Shell.Current.DisplayAlertAsync("Filtros requeridos", "Ingresa un nombre o selecciona al menos un filtro (tipo o rareza) para buscar.", "OK");
+            return;
+        }
+
         IsSearching = true;
+        HasSearched = true;
         IsSearchEmpty = false;
         SearchResults.Clear();
         
-        var results = await _repository.SearchCardsAsync(SearchQuery);
+        var results = await _repository.SearchCardsAsync(SearchQuery, SelectedType, SelectedRarity);
         foreach (var r in results)
         {
             SearchResults.Add(r);
@@ -124,6 +164,17 @@ public partial class FormViewModel : ObservableObject
         
         IsSearching = false;
         IsSearchEmpty = SearchResults.Count == 0;
+    }
+
+    [RelayCommand]
+    private void ResetFilters()
+    {
+        SearchQuery = string.Empty;
+        SelectedType = "Todos";
+        SelectedRarity = "Todas";
+        SearchResults.Clear();
+        HasSearched = false;
+        IsSearchEmpty = true;
     }
 
     [RelayCommand]

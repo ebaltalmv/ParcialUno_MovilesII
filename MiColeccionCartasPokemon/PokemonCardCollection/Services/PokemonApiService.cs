@@ -65,13 +65,35 @@ public class PokemonApiService
     }
 
     /// <summary>
-    /// Searches the API for cards matching the query.
+    /// Searches the API for cards matching the query, type, and rarity filters.
     /// </summary>
-    public async Task<List<TcgCardDto>> SearchCardsAsync(string query)
+    public async Task<List<TcgCardDto>> SearchCardsAsync(string? name = null, string? type = null, string? rarity = null)
     {
         try
         {
-            var url = $"https://api.tcgdex.net/v2/en/cards?name={Uri.EscapeDataString(query)}";
+            var queryParams = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                queryParams.Add($"name={Uri.EscapeDataString(name.Trim())}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(type) && type != "Todos" && type != "All")
+            {
+                queryParams.Add($"types={Uri.EscapeDataString(type.Trim())}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(rarity) && rarity != "Todas" && rarity != "All")
+            {
+                queryParams.Add($"rarity={Uri.EscapeDataString(rarity.Trim())}");
+            }
+
+            var url = "https://api.tcgdex.net/v2/en/cards";
+            if (queryParams.Count > 0)
+            {
+                url += "?" + string.Join("&", queryParams);
+            }
+
             var dtos = await _http.GetFromJsonAsync<List<TcgCardDto>>(url);
             if (dtos != null)
             {

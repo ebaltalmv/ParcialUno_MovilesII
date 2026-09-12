@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:PokemonCardCollection.ViewModels"
-             xmlns:models="clr-namespace:PokemonCardCollection.Data"
+             xmlns:dtos="clr-namespace:PokemonCardCollection.Data.DTOs"
              x:Class="PokemonCardCollection.Views.FormPage"
              x:DataType="vm:FormViewModel"
              Title="{Binding PageTitle}"
@@ -11,34 +11,108 @@
     <Grid>
         <!-- SEARCH VIEW -->
         <Grid IsVisible="{Binding IsSearchVisible}" RowDefinitions="Auto, *">
-            <SearchBar Grid.Row="0"
-                       Text="{Binding SearchQuery}" 
-                       SearchCommand="{Binding SearchApiCommand}" 
-                       Placeholder="Search card by name..." />
-                       
-            <!-- Empty state / Instructions -->
+            <VerticalStackLayout Grid.Row="0" Spacing="10" Padding="12,8">
+                <!-- Search Input -->
+                <SearchBar Text="{Binding SearchQuery}" 
+                           SearchCommand="{Binding SearchApiCommand}" 
+                           Placeholder="Search by name (optional)..." />
+
+                <!-- Filters Section -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <!-- Type Filter -->
+                    <VerticalStackLayout Grid.Column="0" Spacing="4">
+                        <Label Text="Pokemon type" 
+                               FontSize="12" 
+                               FontAttributes="Bold" 
+                               TextColor="{AppThemeBinding Light={StaticResource Outline}, Dark={StaticResource OutlineDark}}" />
+                        <Border StrokeShape="RoundRectangle 8" 
+                                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}" 
+                                Stroke="{StaticResource Outline}" 
+                                StrokeThickness="1" 
+                                Padding="8,0">
+                            <Picker Title="Select Type..."
+                                    ItemsSource="{Binding AvailableTypes}" 
+                                    SelectedItem="{Binding SelectedType}" />
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <!-- Rarity Filter -->
+                    <VerticalStackLayout Grid.Column="1" Spacing="4">
+                        <Label Text="Pokemon rarity" 
+                               FontSize="12" 
+                               FontAttributes="Bold" 
+                               TextColor="{AppThemeBinding Light={StaticResource Outline}, Dark={StaticResource OutlineDark}}" />
+                        <Border StrokeShape="RoundRectangle 8" 
+                                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}" 
+                                Stroke="{StaticResource Outline}" 
+                                StrokeThickness="1" 
+                                Padding="8,0">
+                            <Picker Title="Select Rarity..."
+                                    ItemsSource="{Binding AvailableRarities}" 
+                                    SelectedItem="{Binding SelectedRarity}" />
+                        </Border>
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!-- Search and Clear Buttons -->
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,4,0,4">
+                    <Button Grid.Column="0"
+                            Text="🔍 Search" 
+                            Command="{Binding SearchApiCommand}" 
+                            BackgroundColor="{StaticResource Primary}" 
+                            TextColor="{StaticResource OnPrimary}" 
+                            FontAttributes="Bold" 
+                            CornerRadius="8" 
+                            HeightRequest="44" />
+                    <Button Grid.Column="1"
+                            Text="Clear"
+                            Command="{Binding ResetFiltersCommand}"
+                            BackgroundColor="Transparent"
+                            BorderColor="{StaticResource Outline}"
+                            BorderWidth="1"
+                            TextColor="{AppThemeBinding Light={StaticResource Outline}, Dark={StaticResource OutlineDark}}"
+                            CornerRadius="8"
+                            HeightRequest="44"
+                            Padding="16,0" />
+                </Grid>
+            </VerticalStackLayout>
+
+            <!-- Initial state / Instructions -->
             <VerticalStackLayout Grid.Row="1" 
                                  HorizontalOptions="Center" 
                                  VerticalOptions="Center" 
                                  Spacing="12"
-                                 IsVisible="{Binding IsSearchEmpty}"
+                                 IsVisible="{Binding ShowInitialState}"
                                  Padding="32">
                 <Label Text="🔎" FontSize="48" HorizontalOptions="Center" />
-                <Label Text="Search for a Pokémon" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" TextColor="{StaticResource Outline}" />
-                <Label Text="Type a name like 'Charizard' or 'Pikachu' above to find a card in the global database." HorizontalOptions="Center" HorizontalTextAlignment="Center" TextColor="{StaticResource Outline}" />
+                <Label Text="Search pokemon cards" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" TextColor="{StaticResource Outline}" />
+                <Label Text="Enter a name or select a type and/or rarity above, then press 'Search' to query the database." HorizontalOptions="Center" HorizontalTextAlignment="Center" TextColor="{StaticResource Outline}" />
+            </VerticalStackLayout>
+
+            <!-- No results message -->
+            <VerticalStackLayout Grid.Row="1" 
+                                 HorizontalOptions="Center" 
+                                 VerticalOptions="Center" 
+                                 Spacing="12"
+                                 IsVisible="{Binding ShowNoResults}"
+                                 Padding="32">
+                <Label Text="❌" FontSize="48" HorizontalOptions="Center" />
+                <Label Text="No results found" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" TextColor="{StaticResource Outline}" />
+                <Label Text="No pokemon cards were found with the selected filters. Try modifying the type, rarity, or name." HorizontalOptions="Center" HorizontalTextAlignment="Center" TextColor="{StaticResource Outline}" />
             </VerticalStackLayout>
 
             <ActivityIndicator Grid.Row="1" 
                                IsRunning="{Binding IsSearching}" 
                                IsVisible="{Binding IsSearching}" 
                                HorizontalOptions="Center" 
-                               VerticalOptions="Center" />
+                               VerticalOptions="Center"
+                               Color="{StaticResource Primary}" />
 
             <CollectionView Grid.Row="1" 
                             ItemsSource="{Binding SearchResults}" 
                             SelectionMode="None">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:TcgCardDto">
+                    <DataTemplate x:DataType="dtos:TcgCardDto">
                         <Border Margin="8" Padding="8" StrokeShape="RoundRectangle 8" BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}" Stroke="{StaticResource Outline}" StrokeThickness="1">
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:FormViewModel}}, Path=SelectApiCardCommand}" CommandParameter="{Binding .}" />

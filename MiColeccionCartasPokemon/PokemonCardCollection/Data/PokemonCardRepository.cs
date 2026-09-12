@@ -42,11 +42,11 @@ public class PokemonCardRepository
     }
 
     /// <summary>
-    /// Searches the API for cards matching the query.
+    /// Searches the API for cards matching the query, type, and rarity filters.
     /// </summary>
-    public async Task<List<TcgCardDto>> SearchCardsAsync(string query)
+    public async Task<List<TcgCardDto>> SearchCardsAsync(string? name = null, string? type = null, string? rarity = null)
     {
-        return await _apiService.SearchCardsAsync(query);
+        return await _apiService.SearchCardsAsync(name, type, rarity);
     }
 
     /// <summary>
