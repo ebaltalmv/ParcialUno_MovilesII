@@ -1,48 +1,71 @@
-using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Http.HttpResults;
+using System.Diagnostics;
+using Microsoft.AspNetCore.OData;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OData.ModelBuilder;
+using ODATAPokemonApi.Data;
+using ODATAPokemonApi.Models;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
-builder.Services.ConfigureHttpJsonOptions(options =>
+// Configuración de CORS
+builder.Services.AddCors(options =>
 {
-    options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
 });
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Configuración del modelo OData EDM
+var modelBuilder = new ODataConventionModelBuilder();
+modelBuilder.EntitySet<PokemonCard>("PokemonCards");
+modelBuilder.EntitySet<CardGrading>("CardGradings");
+
+// Controladores con OData
+builder.Services.AddControllers().AddOData(options =>
+{
+    options.AddRouteComponents("odata", modelBuilder.GetEdmModel());
+    options.EnableQueryFeatures(null);
+});
+
+// Base de Datos SQLite
+builder.Services.AddDbContext<PokemonDbContext>(options =>
+    options.UseSqlite("Data Source=pokemon_cards.db"));
 
 var app = builder.Build();
 
+app.UseCors("AllowAll");
+app.MapControllers();
+
+// Inicialización de la base de datos y carga de datos iniciales (Seed)
+using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
+{
+    var db = serviceScope.ServiceProvider.GetRequiredService<PokemonDbContext>();
+    db.Database.EnsureCreated();
+    Seeder.SeedData(db);
+}
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    // Abre automáticamente el navegador en la ruta OData al iniciar
+    app.Lifetime.ApplicationStarted.Register(() =>
+    {
+        try
+        {
+            var serverUrl = app.Urls.FirstOrDefault() ?? "http://localhost:5123";
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = $"{serverUrl}/odata/PokemonCards",
+                UseShellExecute = true
+            });
+        }
+        catch
+        {
+            // En caso de entorno sin interfaz gráfica, se ignora
+        }
+    });
 }
-
-Todo[] sampleTodos =
-[
-    new(1, "Walk the dog"),
-    new(2, "Do the dishes", DateOnly.FromDateTime(DateTime.Now)),
-    new(3, "Do the laundry", DateOnly.FromDateTime(DateTime.Now.AddDays(1))),
-    new(4, "Clean the bathroom"),
-    new(5, "Clean the car", DateOnly.FromDateTime(DateTime.Now.AddDays(2)))
-];
-
-var todosApi = app.MapGroup("/todos");
-todosApi.MapGet("/", () => sampleTodos)
-        .WithName("GetTodos");
-
-todosApi.MapGet("/{id}", Results<Ok<Todo>, NotFound> (int id) =>
-    sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
-        ? TypedResults.Ok(todo)
-        : TypedResults.NotFound())
-    .WithName("GetTodoById");
 
 app.Run();
-
-public record Todo(int Id, string? Title, DateOnly? DueBy = null, bool IsComplete = false);
-
-[JsonSerializable(typeof(Todo[]))]
-internal partial class AppJsonSerializerContext : JsonSerializerContext
-{
-
-}

@@ -1,11 +1,76 @@
-@ODATAPokemonApi_HostAddress = http://localhost:5123
+@HostAddress = http://localhost:5123
 
-GET {{ODATAPokemonApi_HostAddress}}/todos/
+### 1. Obtener Metadatos EDM de OData
+GET {{HostAddress}}/odata/$metadata
+Accept: application/xml
+
+### 2. Listado general de cartas Pokémon
+GET {{HostAddress}}/odata/PokemonCards
 Accept: application/json
 
-###
-
-GET {{ODATAPokemonApi_HostAddress}}/todos/1
+### 3. Listado con Expand ($expand=Gradings) para traer las calificaciones
+GET {{HostAddress}}/odata/PokemonCards?$expand=Gradings
 Accept: application/json
 
-###
+### 4. Filtrar por valor estimado mayor a 150 ($filter=EstimatedValue gt 150)
+GET {{HostAddress}}/odata/PokemonCards?$filter=EstimatedValue gt 150
+Accept: application/json
+
+### 5. Filtrar por Categoría ($filter=Category eq 'Fire') con Expand
+GET {{HostAddress}}/odata/PokemonCards?$filter=Category eq 'Fire'&$expand=Gradings
+Accept: application/json
+
+### 6. Filtrar por Rareza y ordenar por valor descendente ($filter y $orderby)
+GET {{HostAddress}}/odata/PokemonCards?$filter=Rarity eq 'Secret Rare'&$orderby=EstimatedValue desc
+Accept: application/json
+
+### 7. Seleccionar solo columnas específicas ($select=Name,Category,EstimatedValue)
+GET {{HostAddress}}/odata/PokemonCards?$select=Name,Category,EstimatedValue
+Accept: application/json
+
+### 8. Paginación y conteo ($top=3&$skip=0&$count=true)
+GET {{HostAddress}}/odata/PokemonCards?$top=3&$skip=0&$count=true
+Accept: application/json
+
+### 9. Obtener una carta por ID con sus gradings
+GET {{HostAddress}}/odata/PokemonCards(1)?$expand=Gradings
+Accept: application/json
+
+### 10. Navegación directa a las calificaciones de una carta
+GET {{HostAddress}}/odata/PokemonCards(1)/Gradings
+Accept: application/json
+
+### 11. Listado directo de calificaciones (CardGradings)
+GET {{HostAddress}}/odata/CardGradings
+Accept: application/json
+
+### 12. Filtrar calificaciones con puntaje perfecto o casi perfecto (Score ge 9.5)
+GET {{HostAddress}}/odata/CardGradings?$filter=Score ge 9.5
+Accept: application/json
+
+### 13. Insertar una nueva carta Pokémon (POST)
+POST {{HostAddress}}/odata/PokemonCards
+Content-Type: application/json
+
+{
+  "name": "Lugia V Alt Art",
+  "category": "Colorless",
+  "rarity": "Secret Rare",
+  "condition": "Mint",
+  "estimatedValue": 195.00,
+  "imageUri": "https://images.tcgdex.net/en/swsh/swsh12/186/low.webp",
+  "isFavorite": true,
+  "description": "Lugia sobrevolando una tormenta marina. Una de las cartas más codiciadas de Tempestad Plateada."
+}
+
+### 14. Insertar una graduación para una carta (POST)
+POST {{HostAddress}}/odata/CardGradings
+Content-Type: application/json
+
+{
+  "pokemonCardId": 1,
+  "graderCompany": "CGC",
+  "score": 9.5,
+  "certifiedDate": "2024-06-15T00:00:00Z",
+  "certificateCode": "CGC-88319201"
+}
