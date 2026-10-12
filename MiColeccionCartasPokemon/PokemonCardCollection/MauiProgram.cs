@@ -55,8 +55,10 @@ public static class MauiProgram
         builder.Services.AddTransient<FormPage>();
 
 #if DEBUG
+        builder.Services.AddBlazorWebViewDeveloperTools();
         builder.Logging.AddDebug();
 #endif
+        builder.Services.AddMauiBlazorWebView();
 
         return builder.Build();
     }

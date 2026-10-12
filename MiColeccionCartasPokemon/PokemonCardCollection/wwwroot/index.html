@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Colección de Cartas Pokémon - SAP Fiori</title>
+    <base href="/" />
+    <link rel="stylesheet" href="css/fiori-theme.css" />
+</head>
+<body class="fiori-root">
+    <div id="app">
+        <!-- Indicador de carga inicial estilo SAP Fiori -->
+        <div style="display: flex; height: 100vh; align-items: center; justify-content: center; flex-direction: column; gap: 1rem; background-color: #f5f6f8;">
+            <div class="fiori-busy-indicator fiori-busy-indicator--large" role="progressbar">
+                <div class="fiori-busy-indicator__dots">
+                    <span class="fiori-busy-indicator__circle"></span>
+                    <span class="fiori-busy-indicator__circle"></span>
+                    <span class="fiori-busy-indicator__circle"></span>
+                </div>
+            </div>
+            <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 0.9rem; color: #556b82; font-weight: 600;">
+                Cargando Colección Pokémon...
+            </span>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui" style="display: none; background: #fff5f5; color: #bb0000; padding: 0.75rem 1rem; position: fixed; bottom: 0; width: 100%; border-top: 2px solid #bb0000; font-family: sans-serif; font-size: 0.85rem; z-index: 10000;">
+        Se ha producido un error no controlado en la aplicación.
+        <a href="" class="reload" style="margin-left: 1rem; font-weight: bold; color: #bb0000;">Recargar</a>
+    </div>
+
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+</body>
+</html>

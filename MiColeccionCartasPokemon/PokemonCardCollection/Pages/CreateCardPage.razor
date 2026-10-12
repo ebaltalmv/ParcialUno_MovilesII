@@ -1,0 +1,282 @@
+@page "/cards/create"
+@page "/create"
+@inject IPokemonCardService CardService
+@inject NavigationManager Navigation
+
+<FioriShellBar Title="Colección de Cartas Pokémon" 
+               Subtitle="Alta de Nueva Carta" 
+               ShowBackButton="true" 
+               OnBack="HandleCancel" />
+
+<div class="fiori-page">
+    @* Indicador de carga estilo SAP Fiori con pantalla de bloqueo *@
+    <FioriBusyIndicator IsBusy="@isSubmitting" 
+                        Text="Guardando carta en el servicio OData..." 
+                        Overlay="true" />
+
+    @* Notificación de estado (MessageStrip estilo SAP Fiori) *@
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div class="fiori-message-strip @(isError ? "fiori-message-strip--error" : "fiori-message-strip--success")" role="alert">
+            <span class="fiori-message-strip__icon">@(isError ? "⛔" : "✔")</span>
+            <div class="fiori-message-strip__content">
+                <strong>@(isError ? "Error al registrar:" : "Operación Exitosa:")</strong> @statusMessage
+            </div>
+        </div>
+    }
+
+    <div class="fiori-card">
+        <div class="fiori-card__header">
+            <div>
+                <h2 class="fiori-card__title">Información de la Carta</h2>
+                <p class="fiori-card__subtitle">Complete los campos requeridos para dar de alta la carta en el inventario empresarial.</p>
+            </div>
+            @* Chip de estado indicando modo de formulario *@
+            <span class="fiori-object-status fiori-object-status--information">
+                <span class="fiori-object-status__icon">✦</span> Nuevo Registro
+            </span>
+        </div>
+
+        @* Formulario de Alta con EditForm y DataAnnotationsValidator *@
+        <EditForm Model="@newCard" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+
+            <div class="fiori-card__content">
+                <div class="fiori-form-grid">
+                    
+                    @* Campo 1: Nombre de la carta (Validación [Required]) *@
+                    <div class="fiori-form-item">
+                        <label class="fiori-label fiori-label--required" for="card-name">
+                            Nombre de la Carta
+                        </label>
+                        <InputText id="card-name" 
+                                   @bind-Value="newCard.Name" 
+                                   class="fiori-input" 
+                                   placeholder="Ej. Charizard Base Set" />
+                        <ValidationMessage For="@(() => newCard.Name)" />
+                    </div>
+
+                    @* Campo 2: Categoría / Tipo (Validación [StringLength(50, MinimumLength = 3)]) *@
+                    <div class="fiori-form-item">
+                        <label class="fiori-label fiori-label--required" for="card-category">
+                            Categoría / Tipo
+                        </label>
+                        <InputText id="card-category" 
+                                   @bind-Value="newCard.Category" 
+                                   class="fiori-input" 
+                                   placeholder="Ej. Fire, Water, Grass, Electric..." />
+                        <ValidationMessage For="@(() => newCard.Category)" />
+                    </div>
+
+                    @* Campo 3: Valor Estimado (Validación [Range(1, 100000)]) *@
+                    <div class="fiori-form-item">
+                        <label class="fiori-label fiori-label--required" for="card-value">
+                            Valor Estimado ($ USD)
+                        </label>
+                        <InputNumber id="card-value" 
+                                     @bind-Value="newCard.EstimatedValue" 
+                                     class="fiori-input" 
+                                     placeholder="10.00" 
+                                     step="0.01" />
+                        <ValidationMessage For="@(() => newCard.EstimatedValue)" />
+                    </div>
+
+                    @* Campo 4: Rareza (con chips ObjectStatus de Fiori) *@
+                    <div class="fiori-form-item">
+                        <label class="fiori-label fiori-label--required" for="card-rarity">
+                            Rareza
+                        </label>
+                        <InputSelect id="card-rarity" @bind-Value="newCard.Rarity" class="fiori-select">
+                            <option value="Common">Common</option>
+                            <option value="Uncommon">Uncommon</option>
+                            <option value="Rare">Rare</option>
+                            <option value="Rare Holo">Rare Holo</option>
+                            <option value="Ultra Rare">Ultra Rare</option>
+                            <option value="Secret Rare">Secret Rare</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => newCard.Rarity)" />
+                    </div>
+
+                    @* Campo 5: Condición Física *@
+                    <div class="fiori-form-item">
+                        <label class="fiori-label fiori-label--required" for="card-condition">
+                            Condición Física
+                        </label>
+                        <InputSelect id="card-condition" @bind-Value="newCard.Condition" class="fiori-select">
+                            <option value="Mint">Mint (Impecable)</option>
+                            <option value="Near Mint">Near Mint (Casi Nueva)</option>
+                            <option value="Lightly Played">Lightly Played (Uso Ligero)</option>
+                            <option value="Played">Played (Jugada)</option>
+                            <option value="Damaged">Damaged (Dañada)</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => newCard.Condition)" />
+                    </div>
+
+                    @* Campo 6: URL de la Imagen *@
+                    <div class="fiori-form-item">
+                        <label class="fiori-label" for="card-image">
+                            URL de la Imagen
+                        </label>
+                        <InputText id="card-image" 
+                                   @bind-Value="newCard.ImageUri" 
+                                   class="fiori-input" 
+                                   placeholder="https://images.pokemontcg.io/..." />
+                        <ValidationMessage For="@(() => newCard.ImageUri)" />
+                    </div>
+
+                    @* Campo 7: Descripción / Notas *@
+                    <div class="fiori-form-item fiori-form-grid--full">
+                        <label class="fiori-label" for="card-description">
+                            Descripción / Notas Adicionales
+                        </label>
+                        <InputTextArea id="card-description" 
+                                       @bind-Value="newCard.Description" 
+                                       class="fiori-textarea" 
+                                       placeholder="Detalles de la primera edición, procedencia o notas para coleccionistas..." />
+                        <ValidationMessage For="@(() => newCard.Description)" />
+                    </div>
+
+                    @* Campo 8: Marcar como Favorita *@
+                    <div class="fiori-form-item fiori-form-grid--full" style="flex-direction: row; align-items: center; gap: 0.65rem;">
+                        <InputCheckbox id="card-favorite" @bind-Value="newCard.IsFavorite" style="width: 1.15rem; height: 1.15rem; cursor: pointer;" />
+                        <label class="fiori-label" for="card-favorite" style="cursor: pointer; margin: 0;">
+                            ★ Marcar como Carta Favorita de la Colección
+                        </label>
+                    </div>
+
+                    @* Previsualización Dinámica con Sistema de Diseño SAP Fiori *@
+                    <div class="fiori-form-grid--full">
+                        <div class="fiori-preview-container">
+                            <span class="fiori-label" style="margin-bottom: 0.75rem;">
+                                Previsualización de Ficha SAP Fiori
+                            </span>
+                            <div class="fiori-preview-card">
+                                <img class="fiori-preview-card__img" 
+                                     src="@(string.IsNullOrWhiteSpace(newCard.ImageUri) ? "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" : newCard.ImageUri)" 
+                                     alt="Vista previa de la carta" 
+                                     onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';" />
+                                <div class="fiori-preview-card__body">
+                                    <h4 class="fiori-preview-card__name">
+                                        @(string.IsNullOrWhiteSpace(newCard.Name) ? "Nombre de la carta" : newCard.Name)
+                                    </h4>
+                                    <div class="fiori-preview-card__chips">
+                                        @* ObjectStatus Fiori para Rareza *@
+                                        <span class="fiori-object-status @GetRarityStatusClass(newCard.Rarity)">
+                                            @newCard.Rarity
+                                        </span>
+                                        @* ObjectStatus Fiori para Condición *@
+                                        <span class="fiori-object-status @GetConditionStatusClass(newCard.Condition)">
+                                            @newCard.Condition
+                                        </span>
+                                    </div>
+                                    <p class="fiori-preview-card__price">
+                                        $@newCard.EstimatedValue.ToString("N2") USD
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            @* Botones de Acción estilo SAP Fiori *@
+            <div class="fiori-card__footer">
+                @* Botón de cancelación / retorno (Transparent / Default) *@
+                <button type="button" 
+                        class="fiori-btn fiori-btn--transparent" 
+                        @onclick="HandleCancel" 
+                        disabled="@isSubmitting">
+                    Cancelar
+                </button>
+
+                @* Botón de guardado (Emphasized Fiori Button) *@
+                <button type="submit" 
+                        class="fiori-btn fiori-btn--emphasized" 
+                        disabled="@isSubmitting">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    Guardar Carta
+                </button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private CreateCardModel newCard = new();
+    private bool isSubmitting = false;
+    private string? statusMessage;
+    private bool isError = false;
+
+    private async Task HandleValidSubmit()
+    {
+        isSubmitting = true;
+        statusMessage = null;
+        isError = false;
+
+        try
+        {
+            // Convertir el modelo validado a DTO de persistencia
+            var cardDto = newCard.ToDto();
+
+            // Consumir el servicio cliente OData implementado por el Integrante 2
+            var created = await CardService.CreateCardAsync(cardDto);
+
+            if (created != null)
+            {
+                statusMessage = $"¡Carta \"{created.Name}\" guardada exitosamente con ID #{created.Id}!";
+                isError = false;
+
+                // Breve pausa para mostrar el mensaje antes de redirigir a la lista
+                await Task.Delay(1200);
+                Navigation.NavigateTo("/cards");
+            }
+            else
+            {
+                statusMessage = "El servicio OData no pudo confirmar la creación de la carta.";
+                isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error de comunicación con OData: {ex.Message}";
+            isError = true;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo("/cards");
+    }
+
+    private string GetRarityStatusClass(string rarity)
+    {
+        return rarity switch
+        {
+            "Secret Rare" => "fiori-object-status--warning",
+            "Ultra Rare" => "fiori-object-status--error",
+            "Rare Holo" or "Rare" => "fiori-object-status--information",
+            _ => "fiori-object-status--neutral"
+        };
+    }
+
+    private string GetConditionStatusClass(string condition)
+    {
+        return condition switch
+        {
+            "Mint" => "fiori-object-status--success",
+            "Near Mint" => "fiori-object-status--information",
+            "Lightly Played" => "fiori-object-status--warning",
+            "Played" or "Damaged" => "fiori-object-status--error",
+            _ => "fiori-object-status--neutral"
+        };
+    }
+}
