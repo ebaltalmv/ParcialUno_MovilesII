@@ -1,0 +1,268 @@
+@namespace PokemonCardCollection.Components
+@inject NavigationManager Navigation
+
+
+@if (Card == null)
+{
+    @* Estado vacío (Empty State / Illustrated Message de SAP Fiori) *@
+    <div class="fiori-card">
+        <div class="fiori-empty-state">
+            <h3 class="fiori-empty-state__title">Ninguna carta seleccionada</h3>
+            <p class="fiori-empty-state__subtitle">
+                Selecciona una carta del listado de la izquierda para visualizar sus detalles técnicos, métricas de mercado y certificaciones oficiales expandidas ($expand=Gradings).
+            </p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="fiori-card">
+        @* Encabezado de la Tarjeta estilo SAP Fiori *@
+        <div class="fiori-card__header">
+            <div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <h2 class="fiori-card__title">@Card.Name</h2>
+                    @if (Card.IsFavorite)
+                    {
+                        <span title="Carta Favorita" style="color: #f59e0b; font-size: 1.25rem; line-height: 1;">★</span>
+                    }
+                </div>
+                <p class="fiori-card__subtitle">Identificador en OData: #@Card.Id | Tipo: @Card.Category</p>
+            </div>
+
+            @* ObjectStatus Fiori: Indicadores de condición y valor *@
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                @if (Card.EsValiosa)
+                {
+                    <span class="fiori-object-status fiori-object-status--warning fiori-object-status--inverted" title="Valor estimado >= $100 USD o Promedio Grading >= 9.0">
+                         Joya Coleccionable
+                    </span>
+                }
+                <span class="fiori-object-status @GetRarityStatusClass(Card.Rarity)">
+                    @Card.Rarity
+                </span>
+                <span class="fiori-object-status @GetConditionStatusClass(Card.Condition)">
+                    @Card.Condition
+                </span>
+            </div>
+        </div>
+
+        <div class="fiori-card__content">
+            @* Showcase principal: Fotografía de la carta y Atributos Generales *@
+            <div class="fiori-detail-showcase" style="margin-bottom: 1.5rem;">
+                <div class="fiori-detail-img-card">
+                    <img class="fiori-detail-img-card__img" 
+                         src="@GetImageUrl(Card.ImageUri)" 
+                         alt="@Card.Name"
+                         onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';" />
+                </div>
+
+                <div style="flex: 1; min-width: 0;">
+                    @* KPI Tiles de SAP Fiori (Métricas calculadas en el dominio DTO) *@
+                    <div class="fiori-kpi-grid">
+                        <div class="fiori-kpi-card">
+                            <span class="fiori-kpi-card__val">$@Card.EstimatedValue.ToString("N2")</span>
+                            <span class="fiori-kpi-card__lbl">Valor Estimado (USD)</span>
+                        </div>
+                        <div class="fiori-kpi-card">
+                            <span class="fiori-kpi-card__val @(Card.PromedioGrading >= 9.0m ? "fiori-kpi-card__val--success" : "")">
+                                @(Card.TotalGradings > 0 ? $"{Card.PromedioGrading:N2} / 10" : "N/A")
+                            </span>
+                            <span class="fiori-kpi-card__lbl">Promedio Grading</span>
+                        </div>
+                        <div class="fiori-kpi-card">
+                            <span class="fiori-kpi-card__val">@Card.TotalGradings</span>
+                            <span class="fiori-kpi-card__lbl">Certificaciones</span>
+                        </div>
+                    </div>
+
+                    @* Ficha de Atributos Fiori *@
+                    <div class="fiori-attr-list">
+                        <div class="fiori-attr-item">
+                            <span class="fiori-attr-item__label">Categoría / Tipo</span>
+                            <span class="fiori-attr-item__value">@Card.Category</span>
+                        </div>
+                        <div class="fiori-attr-item">
+                            <span class="fiori-attr-item__label">Rareza Oficial</span>
+                            <span class="fiori-attr-item__value">@Card.Rarity</span>
+                        </div>
+                        <div class="fiori-attr-item">
+                            <span class="fiori-attr-item__label">Condición Física</span>
+                            <span class="fiori-attr-item__value">@Card.Condition</span>
+                        </div>
+                        <div class="fiori-attr-item">
+                            <span class="fiori-attr-item__label">Estado Colección</span>
+                            <span class="fiori-attr-item__value">@(Card.IsFavorite ? "★ Marcada como Favorita" : "Colección Estándar")</span>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(Card.Description))
+                    {
+                        <div style="margin-top: 1rem; padding: 0.85rem; background-color: #fafbfc; border: 1px solid #e5ebf1; border-radius: var(--sapField_BorderCornerRadius);">
+                            <span class="fiori-attr-item__label" style="display: block; margin-bottom: 0.25rem;">Notas de la Edición</span>
+                            <p style="margin: 0; font-size: 0.85rem; line-height: 1.45; color: var(--sapTextColor);">
+                                @Card.Description
+                            </p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @* Sección: Certificaciones Relacionadas (Card.Gradings cargadas con $expand=Gradings) *@
+            <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                    <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--sapTitleColor); display: flex; align-items: center; gap: 0.5rem;">
+                        Certificaciones Oficiales
+                        <span class="fiori-object-status fiori-object-status--information">
+                            @Card.TotalGradings @(Card.TotalGradings == 1 ? "registro" : "registros")
+                        </span>
+                    </h3>
+                </div>
+
+                @if (Card.Gradings == null || Card.Gradings.Count == 0)
+                {
+                    <div class="fiori-message-strip fiori-message-strip--info" role="status">
+                        <div class="fiori-message-strip__content">
+                            Esta carta Pokémon aún no cuenta con certificaciones físicas registradas (PSA, BGS, CGC, SGC) en la base de datos OData.
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="fiori-table-wrapper">
+                        <table class="fiori-table">
+                            <thead>
+                                <tr>
+                                    <th>Entidad Calificadora</th>
+                                    <th>Score / Nota</th>
+                                    <th>Código de Certificado</th>
+                                    <th>Fecha Emisión</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var grading in Card.Gradings)
+                                {
+                                    <tr>
+                                        <td>
+                                            <span class="fiori-grader-badge @GetGraderBadgeClass(grading.GraderCompany)">
+                                                @grading.GraderCompany
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="fiori-score-badge @GetScoreBadgeClass(grading.Score)">
+                                                @grading.Score.ToString("0.0")
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <code style="font-size: 0.85rem; background-color: #f1f4f8; padding: 2px 6px; border-radius: 4px; border: 1px solid #d5dde5;">
+                                                @grading.CertificateCode
+                                            </code>
+                                        </td>
+                                        <td style="color: var(--sapContent_LabelColor);">
+                                            @grading.CertifiedDate.ToString("dd/MM/yyyy")
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @* Pie de Tarjeta Fiori con navegación al detalle completo *@
+        <div class="fiori-card__footer">
+            <button type="button" 
+                    class="fiori-btn fiori-btn--emphasized"
+                    @onclick="GoToFullDetail"
+                    title="Abrir la pantalla de detalle completo con ruta parametrizada /cards/@Card.Id">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+                Ver Detalle Completo
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>
+    /// Carta Pokémon seleccionada inyectada en cascada desde el componente contenedor padre.
+    /// </summary>
+    [CascadingParameter(Name = "SelectedCard")]
+    public PokemonCardDto? Card { get; set; }
+
+    /// <summary>
+    /// Evento opcional para notificar la selección hacia el componente contenedor si se requiere.
+    /// </summary>
+    [Parameter]
+    public EventCallback<int> OnViewFullDetail { get; set; }
+
+    private async Task GoToFullDetail()
+    {
+        if (Card == null) return;
+
+        if (OnViewFullDetail.HasDelegate)
+        {
+            await OnViewFullDetail.InvokeAsync(Card.Id);
+        }
+        else
+        {
+            Navigation.NavigateTo($"/cards/{Card.Id}");
+        }
+    }
+
+    private string GetImageUrl(string? uri)
+    {
+        return string.IsNullOrWhiteSpace(uri)
+            ? "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"
+            : uri;
+    }
+
+    private string GetRarityStatusClass(string rarity)
+    {
+        return rarity switch
+        {
+            "Secret Rare" => "fiori-object-status--warning",
+            "Ultra Rare" => "fiori-object-status--error",
+            "Rare Holo" or "Rare" => "fiori-object-status--information",
+            _ => "fiori-object-status--neutral"
+        };
+    }
+
+    private string GetConditionStatusClass(string condition)
+    {
+        return condition switch
+        {
+            "Mint" => "fiori-object-status--success",
+            "Near Mint" => "fiori-object-status--information",
+            "Lightly Played" => "fiori-object-status--warning",
+            "Played" or "Damaged" => "fiori-object-status--error",
+            _ => "fiori-object-status--neutral"
+        };
+    }
+
+    private string GetGraderBadgeClass(string company)
+    {
+        var normalized = company?.ToUpperInvariant().Trim() ?? string.Empty;
+        if (normalized.Contains("PSA")) return "fiori-grader-badge--psa";
+        if (normalized.Contains("BGS") || normalized.Contains("BECKETT")) return "fiori-grader-badge--bgs";
+        if (normalized.Contains("CGC")) return "fiori-grader-badge--cgc";
+        if (normalized.Contains("SGC")) return "fiori-grader-badge--sgc";
+        return "fiori-grader-badge--other";
+    }
+
+    private string GetScoreBadgeClass(decimal score)
+    {
+        return score switch
+        {
+            >= 10.0m => "fiori-score-badge--gold",
+            >= 9.0m => "fiori-score-badge--green",
+            >= 8.0m => "fiori-score-badge--blue",
+            _ => "fiori-score-badge--orange"
+        };
+    }
+}
+

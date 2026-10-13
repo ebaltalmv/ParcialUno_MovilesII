@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PokemonCardCollection.Data;
 using PokemonCardCollection.Services;
@@ -19,9 +20,23 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
 
-        // ----- Dependency Injection -----
+       // ----- Dependency Injection -----
+
+        // Configuración de la URL base del backend OData local:
+        // - En emulador Android: '10.0.2.2' es el alias de loopback para acceder al host de desarrollo.
+        // - En Windows / iOS Simulator: 'localhost' apunta directamente a la máquina local.
+        var backendBaseUrl = DeviceInfo.Platform == DevicePlatform.Android
+            ? "http://10.0.2.2:5123/"
+            : "http://localhost:5123/";
 
         // Services
+        builder.Services.AddHttpClient<IPokemonCardService, PokemonCardService>(client =>
+        {
+            client.BaseAddress = new Uri(backendBaseUrl);
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+            client.Timeout = TimeSpan.FromSeconds(15);
+        });
+
         builder.Services.AddSingleton<PokemonApiService>();
 
         // Data — singleton so all pages share the same in-memory data
@@ -38,10 +53,13 @@ public static class MauiProgram
         builder.Services.AddTransient<DetailPage>();
         builder.Services.AddTransient<FavoritesPage>();
         builder.Services.AddTransient<FormPage>();
+        builder.Services.AddTransient<BlazorHybridPage>();
 
 #if DEBUG
+        builder.Services.AddBlazorWebViewDeveloperTools();
         builder.Logging.AddDebug();
 #endif
+        builder.Services.AddMauiBlazorWebView();
 
         return builder.Build();
     }

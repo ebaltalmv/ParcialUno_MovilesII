@@ -1,0 +1,81 @@
+@namespace PokemonCardCollection.Components
+
+<header class="fiori-shellbar" role="banner">
+    <div class="fiori-shellbar__left">
+        @if (ShowBackButton)
+        {
+            <button type="button" 
+                    class="fiori-shellbar__btn-action" 
+                    @onclick="HandleBackClicked" 
+                    title="Regresar" 
+                    aria-label="Regresar a la página anterior">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+        }
+
+        <div class="fiori-shellbar__logo" title="Pokémon Card Collection">
+            <svg class="fiori-shellbar__logo-icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2" fill="none" />
+                <line x1="2" y1="12" x2="22" y2="12" stroke="white" stroke-width="2" />
+                <circle cx="12" cy="12" r="3" fill="white" />
+                <circle cx="12" cy="12" r="1.5" fill="#1d2d3e" />
+            </svg>
+        </div>
+
+        <div class="fiori-shellbar__headings">
+            <span class="fiori-shellbar__title">@Title</span>
+            @if (!string.IsNullOrWhiteSpace(Subtitle))
+            {
+                <span class="fiori-shellbar__subtitle">@Subtitle</span>
+            }
+        </div>
+    </div>
+
+    <div class="fiori-shellbar__actions">
+        @if (Actions != null)
+        {
+            @Actions
+        }
+
+        <div class="fiori-shellbar__avatar" title="Entrenador Pokémon">
+            @UserInitials
+        </div>
+    </div>
+</header>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Colección de Cartas Pokémon";
+
+    [Parameter]
+    public string? Subtitle { get; set; }
+
+    [Parameter]
+    public bool ShowBackButton { get; set; } = false;
+
+    [Parameter]
+    public EventCallback OnBack { get; set; }
+
+    [Parameter]
+    public string UserInitials { get; set; } = "PK";
+
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+
+    [Inject]
+    private NavigationManager? Navigation { get; set; }
+
+    private async Task HandleBackClicked()
+    {
+        if (OnBack.HasDelegate)
+        {
+            await OnBack.InvokeAsync();
+        }
+        else if (Navigation != null)
+        {
+            Navigation.NavigateTo("/cards");
+        }
+    }
+}
