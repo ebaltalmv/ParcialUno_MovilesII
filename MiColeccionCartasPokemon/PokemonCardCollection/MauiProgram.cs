@@ -20,11 +20,11 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
 
-        // ----- Dependency Injection -----
+       // ----- Dependency Injection -----
 
         // Configuración de la URL base del backend OData local:
         // - En emulador Android: '10.0.2.2' es el alias de loopback para acceder al host de desarrollo.
-        // - En Windows / MacCatalyst / iOS Simulator: 'localhost' apunta directamente a la máquina local.
+        // - En Windows / iOS Simulator: 'localhost' apunta directamente a la máquina local.
         var backendBaseUrl = DeviceInfo.Platform == DevicePlatform.Android
             ? "http://10.0.2.2:5123/"
             : "http://localhost:5123/";
@@ -53,6 +53,7 @@ public static class MauiProgram
         builder.Services.AddTransient<DetailPage>();
         builder.Services.AddTransient<FavoritesPage>();
         builder.Services.AddTransient<FormPage>();
+        builder.Services.AddTransient<BlazorHybridPage>();
 
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();

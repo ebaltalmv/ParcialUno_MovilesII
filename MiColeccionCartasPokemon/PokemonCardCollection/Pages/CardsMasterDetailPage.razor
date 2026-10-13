@@ -1,0 +1,316 @@
+@page "/"
+@page "/cards"
+@inject IPokemonCardService CardService
+@inject NavigationManager Navigation
+
+
+
+<FioriShellBar Title="Colección de Cartas Pokémon" 
+               Subtitle="Explorador Master-Detail OData" 
+               ShowBackButton="false">
+    <Actions>
+        @* Botón de Refresco de datos OData *@
+        <button type="button" 
+                class="fiori-shellbar__btn-action" 
+                @onclick="LoadCardsAsync" 
+                title="Actualizar catálogo desde OData" 
+                aria-label="Actualizar catálogo">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+        </button>
+
+        @* Botón de Alta de Nueva Carta *@
+        <button type="button" 
+                class="fiori-btn fiori-btn--emphasized" 
+                style="height: 2rem; font-size: 0.8rem; padding: 0 0.85rem;"
+                @onclick='() => Navigation.NavigateTo("/cards/create")'
+                title="Dar de alta una nueva carta">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Nueva Carta
+        </button>
+    </Actions>
+</FioriShellBar>
+
+<div class="fiori-page fiori-page--fluid">
+    @* Indicador de Carga estilo SAP Fiori *@
+    <FioriBusyIndicator IsBusy="@isLoading" 
+                        Text="Consultando catálogo de cartas con certificaciones OData ($expand=Gradings)..." />
+
+    @* Notificación de Error estilo SAP Fiori *@
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="fiori-message-strip fiori-message-strip--error" role="alert">
+            <div class="fiori-message-strip__content">
+                <strong>Error al sincronizar con el backend:</strong> @errorMessage
+            </div>
+            <button type="button" class="fiori-btn fiori-btn--ghost" style="height: 1.8rem; font-size: 0.75rem;" @onclick="LoadCardsAsync">
+                Reintentar
+            </button>
+        </div>
+    }
+
+    @if (!isLoading && string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="fiori-master-detail">
+            <aside class="fiori-master-pane">
+                <div class="fiori-master-header">
+                    <div class="fiori-master-header__top">
+                        <h2 class="fiori-master-header__title">
+                            Inventario de Cartas
+                            <span class="fiori-object-status fiori-object-status--information">
+                                @FilteredCards.Count() / @cards.Count
+                            </span>
+                        </h2>
+                    </div>
+
+                    @* Filtros rápidos estilo SAP Fiori *@
+                    <div class="fiori-master-search">
+                        <input type="search" 
+                               class="fiori-input" 
+                               placeholder="🔍 Filtrar por nombre de Pokémon..." 
+                               @bind="searchTerm" 
+                               @bind:event="oninput" />
+
+                        <div style="display: flex; gap: 0.5rem;">
+                            <select class="fiori-select" @bind="selectedCategory" style="padding: 0.35rem 0.6rem; font-size: 0.8rem;">
+                                <option value="All">Todos los Tipos</option>
+                                @foreach (var cat in availableCategories)
+                                {
+                                    <option value="@cat">@cat</option>
+                                }
+                            </select>
+
+                            <select class="fiori-select" @bind="sortBy" style="padding: 0.35rem 0.6rem; font-size: 0.8rem;">
+                                <option value="Name">Nombre (A-Z)</option>
+                                <option value="ValueDesc">Mayor Valor ($)</option>
+                                <option value="GradingDesc">Mayor Grading</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                @* Listado de cartas con comportamiento Master-Detail *@
+                <ul class="fiori-master-list" role="listbox" aria-label="Lista de cartas Pokémon">
+                    @if (!FilteredCards.Any())
+                    {
+                        <li style="padding: 2.5rem 1rem; text-align: center; color: var(--sapContent_LabelColor);">
+                            <span style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">🔍</span>
+                            No se encontraron cartas que coincidan con los filtros aplicados.
+                        </li>
+                    }
+                    else
+                    {
+                        @foreach (var card in FilteredCards)
+                        {
+                            var isSelected = selectedCard?.Id == card.Id;
+                            <li class="fiori-card-item @(isSelected ? "fiori-card-item--selected" : "")"
+                                role="option"
+                                aria-selected="@isSelected"
+                                @onclick="() => SelectCard(card)">
+                                
+                                @* Miniatura de la Carta *@
+                                <img class="fiori-card-item__thumb" 
+                                     src="@GetImageUrl(card.ImageUri)" 
+                                     alt="@card.Name"
+                                     onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';" />
+
+                                @* Información principal *@
+                                <div class="fiori-card-item__info">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                                        <h3 class="fiori-card-item__name">@card.Name</h3>
+                                        @if (card.IsFavorite)
+                                        {
+                                            <span title="Favorita" style="color: #f59e0b; font-size: 0.95rem;">★</span>
+                                        }
+                                    </div>
+
+                                    <div class="fiori-card-item__badges">
+                                        <span class="fiori-object-status @GetCategoryStatusClass(card.Category)" style="font-size: 0.7rem; padding: 0.1rem 0.45rem;">
+                                            @card.Category
+                                        </span>
+                                        <span class="fiori-object-status @GetRarityStatusClass(card.Rarity)" style="font-size: 0.7rem; padding: 0.1rem 0.45rem;">
+                                            @card.Rarity
+                                        </span>
+                                    </div>
+
+                                    <div class="fiori-card-item__meta">
+                                        <span class="fiori-card-item__price">
+                                            $@card.EstimatedValue.ToString("N2")
+                                        </span>
+
+                                        <span class="fiori-card-item__gradings-count" title="@card.TotalGradings certificaciones registradas">
+                                            📜 @card.TotalGradings certs
+                                            @if (card.TotalGradings > 0)
+                                            {
+                                                <strong style="color: var(--sapPositiveColor); margin-left: 0.25rem;">
+                                                    (@card.PromedioGrading:N1)
+                                                </strong>
+                                            }
+                                        </span>
+                                    </div>
+                                </div>
+
+                                @* Botón directo de navegación a la ruta parametrizada /cards/{id} *@
+                                <button type="button" 
+                                        class="fiori-card-item__arrow" 
+                                        style="background: transparent; border: none; cursor: pointer; padding: 0.5rem;"
+                                        title="Navegar al detalle completo (/cards/@card.Id)"
+                                        @onclick:stopPropagation="true"
+                                        @onclick="() => NavigateToDetail(card.Id)">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="9 18 15 12 9 6"></polyline>
+                                    </svg>
+                                </button>
+                            </li>
+                        }
+                    }
+                </ul>
+            </aside>
+
+            
+            <section class="fiori-detail-pane">
+                <CascadingValue Value="selectedCard" Name="SelectedCard">
+                    <CardDetailPanel OnViewFullDetail="NavigateToDetail" />
+                </CascadingValue>
+            </section>
+        </div>
+    }
+</div>
+
+@code {
+    private List<PokemonCardDto> cards = new();
+    private PokemonCardDto? selectedCard;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    // Filtros locales
+    private string searchTerm = string.Empty;
+    private string selectedCategory = "All";
+    private string sortBy = "Name";
+    private List<string> availableCategories = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCardsAsync();
+    }
+
+    private async Task LoadCardsAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            // Consumo de IPokemonCardService con la cláusula $expand=Gradings implementada en el servicio
+            cards = await CardService.GetAllCardsAsync();
+
+            // Extraer categorías dinámicas para el selector
+            availableCategories = cards
+                .Select(c => c.Category)
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .Distinct()
+                .OrderBy(c => c)
+                .ToList();
+
+            // Seleccionar por defecto la primera carta para mostrar en el panel de detalle
+            if (cards.Count > 0)
+            {
+                // Si ya había una carta seleccionada previamente, mantenerla si sigue existiendo
+                if (selectedCard != null && cards.Any(c => c.Id == selectedCard.Id))
+                {
+                    selectedCard = cards.First(c => c.Id == selectedCard.Id);
+                }
+                else
+                {
+                    selectedCard = cards[0];
+                }
+            }
+            else
+            {
+                selectedCard = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"No fue posible cargar las cartas desde el servicio OData: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void SelectCard(PokemonCardDto card)
+    {
+        selectedCard = card;
+    }
+
+    private void NavigateToDetail(int cardId)
+    {
+        Navigation.NavigateTo($"/cards/{cardId}");
+    }
+
+    private IEnumerable<PokemonCardDto> FilteredCards
+    {
+        get
+        {
+            var query = cards.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim();
+                query = query.Where(c => c.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                                         c.Category.Contains(term, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(selectedCategory) && selectedCategory != "All")
+            {
+                query = query.Where(c => string.Equals(c.Category, selectedCategory, StringComparison.OrdinalIgnoreCase));
+            }
+
+            query = sortBy switch
+            {
+                "ValueDesc" => query.OrderByDescending(c => c.EstimatedValue),
+                "GradingDesc" => query.OrderByDescending(c => c.PromedioGrading).ThenByDescending(c => c.TotalGradings),
+                _ => query.OrderBy(c => c.Name)
+            };
+
+            return query;
+        }
+    }
+
+    private string GetImageUrl(string? uri)
+    {
+        return string.IsNullOrWhiteSpace(uri)
+            ? "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"
+            : uri;
+    }
+
+    private string GetCategoryStatusClass(string category)
+    {
+        return category?.ToLowerInvariant() switch
+        {
+            "fire" => "fiori-object-status--error",
+            "water" => "fiori-object-status--information",
+            "grass" => "fiori-object-status--success",
+            "electric" => "fiori-object-status--warning",
+            _ => "fiori-object-status--neutral"
+        };
+    }
+
+    private string GetRarityStatusClass(string rarity)
+    {
+        return rarity switch
+        {
+            "Secret Rare" => "fiori-object-status--warning",
+            "Ultra Rare" => "fiori-object-status--error",
+            "Rare Holo" or "Rare" => "fiori-object-status--information",
+            _ => "fiori-object-status--neutral"
+        };
+    }
+}
+

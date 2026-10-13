@@ -727,3 +727,453 @@ body, .fiori-root {
   color: var(--sapBrandColor);
   margin: 0;
 }
+
+/* ==========================================================================
+   10. SAP FIORI MASTER-DETAIL LAYOUT (Flexible Split View)
+   ========================================================================== */
+.fiori-page--fluid {
+  max-width: 1440px;
+  padding: 1.25rem;
+}
+
+.fiori-master-detail {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .fiori-master-detail {
+    grid-template-columns: 360px 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .fiori-master-detail {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fiori-master-pane {
+  background-color: var(--sapCard_Background);
+  border: 1px solid var(--sapCard_BorderColor);
+  border-radius: var(--sapCard_BorderCornerRadius);
+  box-shadow: var(--sapCard_Shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.fiori-master-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--sapCard_BorderColor);
+  background-color: #fafbfc;
+}
+
+.fiori-master-header__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.fiori-master-header__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--sapTitleColor);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fiori-master-search {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fiori-master-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: calc(100vh - 210px);
+  min-height: 380px;
+  overflow-y: auto;
+}
+
+/* Master List Item (sap.m.StandardListItem / ObjectListItem) */
+.fiori-card-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #edf1f5;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+  background-color: #ffffff;
+}
+
+.fiori-card-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.fiori-card-item:hover {
+  background-color: #f7f9fb;
+}
+
+.fiori-card-item--selected {
+  background-color: var(--sapSelectedColor) !important;
+}
+
+.fiori-card-item--selected::before {
+  background-color: var(--sapBrandColor);
+}
+
+.fiori-card-item__thumb {
+  width: 52px;
+  height: 72px;
+  object-fit: contain;
+  background-color: #f5f6f8;
+  border-radius: 6px;
+  padding: 4px;
+  border: 1px solid #e1e6eb;
+  flex-shrink: 0;
+}
+
+.fiori-card-item__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.fiori-card-item__name {
+  font-size: 0.925rem;
+  font-weight: 700;
+  color: var(--sapTitleColor);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fiori-card-item__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.fiori-card-item__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.15rem;
+}
+
+.fiori-card-item__price {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--sapBrandColor);
+}
+
+.fiori-card-item__gradings-count {
+  font-size: 0.75rem;
+  color: var(--sapContent_LabelColor);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.fiori-card-item__arrow {
+  color: #a8b3be;
+  transition: transform 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.fiori-card-item:hover .fiori-card-item__arrow {
+  transform: translateX(3px);
+  color: var(--sapBrandColor);
+}
+
+/* Detail Pane */
+.fiori-detail-pane {
+  min-width: 0;
+}
+
+/* ==========================================================================
+   11. SAP FIORI KPI TILES & OBJECT HEADER
+   ========================================================================= */
+.fiori-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.fiori-kpi-card {
+  background: #fbfcfd;
+  border: 1px solid var(--sapCard_BorderColor);
+  border-radius: var(--sapField_BorderCornerRadius);
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  transition: transform 0.15s ease;
+}
+
+.fiori-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.fiori-kpi-card__val {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--sapBrandColor);
+  line-height: 1.2;
+}
+
+.fiori-kpi-card__val--success {
+  color: var(--sapPositiveColor);
+}
+
+.fiori-kpi-card__val--warning {
+  color: var(--sapCriticalColor);
+}
+
+.fiori-kpi-card__lbl {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--sapContent_LabelColor);
+}
+
+/* ==========================================================================
+   12. SAP FIORI RESPONSIVE TABLE (sap.m.Table)
+   ========================================================================= */
+.fiori-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--sapCard_BorderColor);
+  border-radius: var(--sapField_BorderCornerRadius);
+}
+
+.fiori-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.fiori-table th {
+  background-color: #f5f7fa;
+  color: var(--sapContent_LabelColor);
+  font-weight: 700;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--sapCard_BorderColor);
+  white-space: nowrap;
+}
+
+.fiori-table td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid #edf1f5;
+  color: var(--sapTextColor);
+  vertical-align: middle;
+}
+
+.fiori-table tr:last-child td {
+  border-bottom: none;
+}
+
+.fiori-table tr:hover td {
+  background-color: #fafbfc;
+}
+
+/* Grader Company Badges */
+.fiori-grader-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 700;
+  font-size: 0.775rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+}
+
+.fiori-grader-badge--psa {
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+.fiori-grader-badge--bgs {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #bbdefb;
+}
+
+.fiori-grader-badge--cgc {
+  background-color: #e0f2f1;
+  color: #00695c;
+  border: 1px solid #b2dfdb;
+}
+
+.fiori-grader-badge--sgc {
+  background-color: #eceff1;
+  color: #37474f;
+  border: 1px solid #cfd8dc;
+}
+
+.fiori-grader-badge--other {
+  background-color: #f5f5f5;
+  color: #616161;
+  border: 1px solid #e0e0e0;
+}
+
+/* Score Pill */
+.fiori-score-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.2rem;
+  height: 1.5rem;
+  padding: 0 0.4rem;
+  font-weight: 800;
+  font-size: 0.825rem;
+  border-radius: 12px;
+}
+
+.fiori-score-badge--gold {
+  background-color: #fff8e1;
+  color: #f57f17;
+  border: 1px solid #ffe082;
+}
+
+.fiori-score-badge--green {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.fiori-score-badge--blue {
+  background-color: #e1f5fe;
+  color: #0277bd;
+  border: 1px solid #b3e5fc;
+}
+
+.fiori-score-badge--orange {
+  background-color: #fff3e0;
+  color: #ef6c00;
+  border: 1px solid #ffe0b2;
+}
+
+/* Empty State (Illustrated Message) */
+.fiori-empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.fiori-empty-state__title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--sapTitleColor);
+  margin: 0 0 0.35rem 0;
+}
+
+.fiori-empty-state__subtitle {
+  font-size: 0.85rem;
+  color: var(--sapContent_LabelColor);
+  max-width: 380px;
+  margin: 0 0 1.25rem 0;
+  line-height: 1.4;
+}
+
+/* Detail Showcase Layout */
+.fiori-detail-showcase {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 640px) {
+  .fiori-detail-showcase {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}
+
+.fiori-detail-img-card {
+  width: 100%;
+  max-width: 240px;
+  background: radial-gradient(circle at center, #ffffff 60%, #edf2f7 100%);
+  border: 1px solid var(--sapCard_BorderColor);
+  border-radius: var(--sapCard_BorderCornerRadius);
+  padding: 1rem;
+  box-shadow: 0 8px 24px rgba(29, 45, 62, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fiori-detail-img-card__img {
+  width: 100%;
+  max-height: 290px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.15));
+  transition: transform 0.25s ease;
+}
+
+.fiori-detail-img-card:hover .fiori-detail-img-card__img {
+  transform: scale(1.03);
+}
+
+.fiori-attr-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.85rem 1.25rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 480px) {
+  .fiori-attr-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fiori-attr-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.fiori-attr-item__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--sapContent_LabelColor);
+  letter-spacing: 0.03em;
+}
+
+.fiori-attr-item__value {
+  font-size: 0.925rem;
+  font-weight: 600;
+  color: var(--sapTextColor);
+}
+

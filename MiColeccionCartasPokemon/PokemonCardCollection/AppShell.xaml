@@ -21,6 +21,12 @@
             Icon="dotnet_bot.png"
             ContentTemplate="{DataTemplate views:FavoritesPage}"
             Route="FavoritesPage" />
+
+        <ShellContent
+            Title="Blazor Fiori"
+            Icon="dotnet_bot.png"
+            ContentTemplate="{DataTemplate views:BlazorHybridPage}"
+            Route="BlazorHybridPage" />
     </TabBar>
 
 </Shell>
